@@ -1,0 +1,42 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33424.131
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TAG.Networking.OpenAI", "TAG.Networking.OpenAI\TAG.Networking.OpenAI.csproj", "{F6C561FE-8A42-4AD7-850C-14C12E19D490}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TAG.Networking.OpenAI.Test", "TAG.Networking.OpenAI.Test\TAG.Networking.OpenAI.Test.csproj", "{F8B9797F-234F-436D-A4F3-EFABFDB4DD66}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{DAF7BFF8-A2D6-4155-9E5D-9ABAC3035A99}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TAG.Things.OpenAI", "TAG.Things.OpenAI\TAG.Things.OpenAI.csproj", "{B41022A2-1DC7-409C-AA19-476729A542E8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F6C561FE-8A42-4AD7-850C-14C12E19D490}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6C561FE-8A42-4AD7-850C-14C12E19D490}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6C561FE-8A42-4AD7-850C-14C12E19D490}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6C561FE-8A42-4AD7-850C-14C12E19D490}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F8B9797F-234F-436D-A4F3-EFABFDB4DD66}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F8B9797F-234F-436D-A4F3-EFABFDB4DD66}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F8B9797F-234F-436D-A4F3-EFABFDB4DD66}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F8B9797F-234F-436D-A4F3-EFABFDB4DD66}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B41022A2-1DC7-409C-AA19-476729A542E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B41022A2-1DC7-409C-AA19-476729A542E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B41022A2-1DC7-409C-AA19-476729A542E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B41022A2-1DC7-409C-AA19-476729A542E8}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {01CC412F-CD50-4B21-A500-67016B2FFDE7}
+	EndGlobalSection
+EndGlobal
