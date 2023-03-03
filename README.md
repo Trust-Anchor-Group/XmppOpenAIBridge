@@ -21,3 +21,14 @@ standalone.
 | [Waher.Networking](https://www.nuget.org/packages/Waher.Networking/)   | Provides tools for working with communication, including troubleshooting. |
 | [Waher.Things](https://www.nuget.org/packages/Waher.Things/)           | Provides a basic architecture enabling the harmonization of things across technology boundaries. |
 | [Waher.Things.Xmpp](https://www.nuget.org/packages/Waher.Things.Xmpp/) | Provides harmonized extensions for XMPP-based communication and extensions. |
+
+The Unit Tests further use the following libraries:
+
+| Nuget                                                                                            | Description |
+|:-------------------------------------------------------------------------------------------------|:------------|
+| [Waher.Events.Console](https://www.nuget.org/packages/Waher.Events.Console/)                     | Outputs events logged to the console output. |
+| [Waher.Persistence](https://www.nuget.org/packages/Waher.Persistence/)                           | Abstraction layer for object databases. |
+| [Waher.Persistence.Files](https://www.nuget.org/packages/Waher.Persistence.Files/)               | An encrypted object database stored as local files. |
+| [Waher.Runtime.Inventory](https://www.nuget.org/packages/Waher.Runtime.Inventory/)               | Maintains an inventory of type definitions in the runtime environment, and permits easy instantiation of suitable classes, and inversion of control (IoC). |
+| [Waher.Runtime.Inventory.Loader](https://www.nuget.org/packages/Waher.Runtime.Inventory.Loader/) | Permits the inventory and seamless integration of classes defined in all available assemblies. |
+| [Waher.Runtime.Settings](https://www.nuget.org/packages/Waher.Runtime.Settings/)                 | Provides easy access to persistent settings. |
