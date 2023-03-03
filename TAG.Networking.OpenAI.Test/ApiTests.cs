@@ -81,5 +81,31 @@ namespace TAG.Networking.OpenAI.Test
 
 			Console.Out.WriteLine(Response.Content);
 		}
+
+		[TestMethod]
+		public async Task Test_02_Whisper_WAV()
+		{
+			Assert.IsNotNull(client);
+
+			// Reference: http://www.voiptroubleshooter.com/open_speech/
+			Uri SampleAudioUri = new("http://www.voiptroubleshooter.com/open_speech/american/OSR_us_000_0010_8k.wav");
+
+			string Response = await client.Whisper(SampleAudioUri);
+
+			Console.Out.WriteLine(Response);
+		}
+
+		[TestMethod]
+		public async Task Test_03_Whisper_MP3()
+		{
+			Assert.IsNotNull(client);
+
+			// Reference: https://commons.wikimedia.org/wiki/Category:Audio_files_of_speeches
+			Uri SampleAudioUri = new("https://upload.wikimedia.org/wikipedia/commons/d/dd/Leyenda_de_los_hermanos_ayar.mp3");
+
+			string Response = await client.Whisper(SampleAudioUri);
+
+			Console.Out.WriteLine(Response);
+		}
 	}
 }

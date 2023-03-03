@@ -14,13 +14,14 @@ The following nugets are used, enabling the libraries to be hosted on an [IoT Ga
 This includes hosting the bridge on the [TAG Neuron](https://lab.tagroot.io/Documentation/Index.md). They can also be used
 standalone.
 
-| Nuget                                                                  | Description |
-|:-----------------------------------------------------------------------|:------------|
-| [Waher.Content](https://www.nuget.org/packages/Waher.Content/)         | Provides a pluggable architecture for accessing, encoding and decoding Internet Content. |
-| [Waher.Events](https://www.nuget.org/packages/Waher.Events/)           | Provides an extensible architecture for event logging in the application. |
-| [Waher.Networking](https://www.nuget.org/packages/Waher.Networking/)   | Provides tools for working with communication, including troubleshooting. |
-| [Waher.Things](https://www.nuget.org/packages/Waher.Things/)           | Provides a basic architecture enabling the harmonization of things across technology boundaries. |
-| [Waher.Things.Xmpp](https://www.nuget.org/packages/Waher.Things.Xmpp/) | Provides harmonized extensions for XMPP-based communication and extensions. |
+| Nuget                                                                              | Description |
+|:-----------------------------------------------------------------------------------|:------------|
+| [Waher.Content](https://www.nuget.org/packages/Waher.Content/)                     | Provides a pluggable architecture for accessing, encoding and decoding Internet Content. |
+| [Waher.Events](https://www.nuget.org/packages/Waher.Events/)                       | Provides an extensible architecture for event logging in the application. |
+| [Waher.Networking](https://www.nuget.org/packages/Waher.Networking/)               | Provides tools for working with communication, including troubleshooting. |
+| [Waher.Runtime.Temporary](https://www.nuget.org/packages/Waher.Runtime.Temporary/) | Library that helps with the management of temporary streams and files. |
+| [Waher.Things](https://www.nuget.org/packages/Waher.Things/)                       | Provides a basic architecture enabling the harmonization of things across technology boundaries. |
+| [Waher.Things.Xmpp](https://www.nuget.org/packages/Waher.Things.Xmpp/)             | Provides harmonized extensions for XMPP-based communication and extensions. |
 
 The Unit Tests further use the following libraries:
 
