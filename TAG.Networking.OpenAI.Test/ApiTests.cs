@@ -1,6 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Text;
 using TAG.Networking.OpenAI.Messages;
+using Waher.Content;
 using Waher.Events;
 using Waher.Events.Console;
 using Waher.Networking.Sniffers;
@@ -9,6 +10,7 @@ using Waher.Persistence.Files;
 using Waher.Runtime.Inventory;
 using Waher.Runtime.Inventory.Loader;
 using Waher.Runtime.Settings;
+using Waher.Runtime.Temporary;
 
 namespace TAG.Networking.OpenAI.Test
 {
@@ -60,7 +62,7 @@ namespace TAG.Networking.OpenAI.Test
 			if (string.IsNullOrEmpty(ApiKey))
 				Assert.Fail("API Key not configured. Make sure the API Key is configured before running tests.");
 
-			client = new OpenAIClient(ApiKey, 
+			client = new OpenAIClient(ApiKey,
 				new ConsoleOutSniffer(BinaryPresentationMethod.Base64, LineEnding.NewLine));
 		}
 
@@ -76,7 +78,7 @@ namespace TAG.Networking.OpenAI.Test
 		{
 			Assert.IsNotNull(client);
 
-			Message Response = await client.ChatGPT(
+			Message Response = await client.ChatGPT("UnitTest",
 				new UserMessage("What is the OpenAI mission?"));
 
 			Console.Out.WriteLine(Response.Content);
@@ -107,5 +109,60 @@ namespace TAG.Networking.OpenAI.Test
 
 			Console.Out.WriteLine(Response);
 		}
+
+		[TestMethod]
+		public async Task Test_04_ImageGeneration_1()
+		{
+			Assert.IsNotNull(client);
+
+			Uri ImageUri = await client.CreateImage("A dragon that looks like a cat", "UnitTest");
+			Console.Out.WriteLine(ImageUri);
+
+			KeyValuePair<string, TemporaryStream> P = await InternetContent.GetTempStreamAsync(ImageUri);
+
+			await CopyAndDisposeFile(P.Value, P.Key, "Test_04");
+		}
+
+		[TestMethod]
+		public async Task Test_05_ImageGeneration_5()
+		{
+			Assert.IsNotNull(client);
+
+			Uri[] ImageUris = await client.CreateImages("A dragon that looks like a cat", ImageSize.ImageSize1024x1024, 5, "UnitTest");
+			int i = 1;
+
+			foreach (Uri Uri in ImageUris)
+			{
+				Console.Out.WriteLine(Uri);
+
+				KeyValuePair<string, TemporaryStream> P = await InternetContent.GetTempStreamAsync(Uri);
+
+				await CopyAndDisposeFile(P.Value, P.Key, "Test_05_" + i.ToString());
+
+				i++;
+			}
+		}
+
+		private static async Task CopyAndDisposeFile(TemporaryStream f, string ContentType, string FileName)
+		{
+			try
+			{
+				string Extension = InternetContent.GetFileExtension(ContentType);
+
+				f.Position = 0;
+
+				if (!Directory.Exists("Images"))
+					Directory.CreateDirectory("Images");
+
+				using FileStream Output = File.Create("Images\\" + FileName + "." + Extension);
+
+				await f.CopyToAsync(Output);
+			}
+			finally
+			{
+				f.Dispose();
+			}
+		}
+
 	}
 }

@@ -13,6 +13,7 @@
     <PackageReference Include="MSTest.TestAdapter" Version="2.2.10" />
     <PackageReference Include="MSTest.TestFramework" Version="2.2.10" />
     <PackageReference Include="coverlet.collector" Version="3.1.2" />
+    <PackageReference Include="Waher.Content.Images" Version="2.1.2" />
     <PackageReference Include="Waher.Events.Console" Version="1.1.1" />
     <PackageReference Include="Waher.Persistence" Version="1.9.0" />
     <PackageReference Include="Waher.Persistence.Files" Version="1.10.0" />
