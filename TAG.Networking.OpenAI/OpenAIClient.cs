@@ -71,7 +71,21 @@ namespace TAG.Networking.OpenAI
 		/// <returns>Message response.</returns>
 		/// <exception cref="Exception">If unable to communicate with API, 
 		/// if exceeding limits, or if something unexpected happened.</exception>
-		public async Task<Message> ChatGPT(string User, params Message[] Messages)
+		public Task<Message> ChatGPT(string User, params Message[] Messages)
+		{
+			return this.ChatGPT(User, (IEnumerable<Message>)Messages);
+		}
+
+		/// <summary>
+		/// Performs a request to OpenAI ChatGPT turbo 3.5, and returns the textual
+		/// response.
+		/// </summary>
+		/// <param name="User">User performing the action.</param>
+		/// <param name="Messages">Messages in conversation.</param>
+		/// <returns>Message response.</returns>
+		/// <exception cref="Exception">If unable to communicate with API, 
+		/// if exceeding limits, or if something unexpected happened.</exception>
+		public async Task<Message> ChatGPT(string User, IEnumerable<Message> Messages)
 		{
 			List<Dictionary<string, object>> Messages2 = new List<Dictionary<string, object>>();
 

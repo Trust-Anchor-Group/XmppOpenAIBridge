@@ -1,4 +1,4 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Text;
 using TAG.Networking.OpenAI.Messages;
 using Waher.Content;
@@ -115,7 +115,7 @@ namespace TAG.Networking.OpenAI.Test
 		{
 			Assert.IsNotNull(client);
 
-			Uri ImageUri = await client.CreateImage("A pink train that falls of a bridge in winter", "UnitTest");
+			Uri ImageUri = await client.CreateImage("en grön fågel med en krona på huvudet som spelar piano med sina fötter", "UnitTest");
 			Console.Out.WriteLine(ImageUri);
 
 			KeyValuePair<string, TemporaryStream> P = await InternetContent.GetTempStreamAsync(ImageUri);

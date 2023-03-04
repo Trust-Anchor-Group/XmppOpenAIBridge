@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Translation xmlns="http://waher.se/Schema/Translation.xsd">
+	<Language code="en" name="English">
+		<Namespace name="TAG.Things.OpenAI">
+			<String id="1">OpenAI</String>
+			<String id="2">API Key:</String>
+			<String id="3">API Key used when communicating with the OpenAI API.</String>
+			<String id="4">ChatGPT-XMPP Bridge</String>
+			<String id="5">Instructions:</String>
+			<String id="6">Natural language discritpions to give OpenAI, instructing it what its role is.</String>
+			<String id="7"></String>
+			<String id="8"></String>
+			<String id="9"></String>
+			<String id="10"></String>
+			<String id="11"></String>
+			<String id="12"></String>
+			<String id="13"></String>
+			<String id="14"></String>
+			<String id="15"></String>
+			<String id="16"></String>
+			<String id="17"></String>
+			<String id="18"></String>
+			<String id="19"></String>
+		</Namespace>
+	</Language>
+</Translation>
