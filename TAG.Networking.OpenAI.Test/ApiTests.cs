@@ -115,7 +115,7 @@ namespace TAG.Networking.OpenAI.Test
 		{
 			Assert.IsNotNull(client);
 
-			Uri ImageUri = await client.CreateImage("A dragon that looks like a cat", "UnitTest");
+			Uri ImageUri = await client.CreateImage("A pink train that falls of a bridge in winter", "UnitTest");
 			Console.Out.WriteLine(ImageUri);
 
 			KeyValuePair<string, TemporaryStream> P = await InternetContent.GetTempStreamAsync(ImageUri);
@@ -128,7 +128,7 @@ namespace TAG.Networking.OpenAI.Test
 		{
 			Assert.IsNotNull(client);
 
-			Uri[] ImageUris = await client.CreateImages("A dragon that looks like a cat", ImageSize.ImageSize1024x1024, 5, "UnitTest");
+			Uri[] ImageUris = await client.CreateImages("A pink train that falls of a bridge in winter", ImageSize.ImageSize1024x1024, 5, "UnitTest");
 			int i = 1;
 
 			foreach (Uri Uri in ImageUris)
