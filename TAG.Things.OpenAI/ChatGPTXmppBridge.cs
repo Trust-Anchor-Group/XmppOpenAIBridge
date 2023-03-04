@@ -1,11 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using TAG.Networking.OpenAI;
 using TAG.Networking.OpenAI.Messages;
+using Waher.Content;
 using Waher.Networking.XMPP;
 using Waher.Persistence;
 using Waher.Runtime.Cache;
+using Waher.Runtime.Inventory;
 using Waher.Runtime.Language;
+using Waher.Runtime.Temporary;
 using Waher.Things.Attributes;
 
 namespace TAG.Things.OpenAI
@@ -83,19 +87,26 @@ namespace TAG.Things.OpenAI
 
 			try
 			{
-				if (!sessions.TryGetValue(e.FromBareJID, out ChatHistory Session))
-				{
-					Session = new ChatHistory(e.FromBareJID);
-					sessions[e.FromBareJID] = Session;
-				}
-
-				// TODO: Check Audio
-				// TODO: Check multi-format
-
-				Session.Add(new UserMessage(e.Body), 2000);
-
 				using (OpenAIClient Client = new OpenAIClient(this.ApiKey, this.Sniffers))
 				{
+					if (Uri.TryCreate(Text, UriKind.Absolute, out Uri ParsedUri) &&
+						InternetContent.CanHead(ParsedUri, out Grade _, out IContentHeader Header) &&
+						await Header.HeadAsync(ParsedUri, null, 10000) is Dictionary<string, object> Headers &&
+						Headers.TryGetValue("Content-Type", out object Obj) &&
+						Obj is string ContentType &&
+						ContentType.StartsWith("audio/", StringComparison.OrdinalIgnoreCase))
+					{
+						Text = await Client.Whisper(ParsedUri);
+					}
+
+					if (!sessions.TryGetValue(e.FromBareJID, out ChatHistory Session))
+					{
+						Session = new ChatHistory(e.FromBareJID);
+						sessions[e.FromBareJID] = Session;
+					}
+
+					Session.Add(new UserMessage(e.Body), 2000);
+
 					Message Response = await Client.ChatGPT(Session.User.LowerCase, Session.Messages);
 					Session.Add(Response, 2000);
 
