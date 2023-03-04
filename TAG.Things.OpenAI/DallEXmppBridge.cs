@@ -1,42 +1,35 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using TAG.Networking.OpenAI;
-using TAG.Networking.OpenAI.Messages;
-using Waher.Content;
 using Waher.Networking.XMPP;
-using Waher.Persistence;
-using Waher.Runtime.Cache;
-using Waher.Runtime.Inventory;
 using Waher.Runtime.Language;
-using Waher.Runtime.Temporary;
 using Waher.Things.Attributes;
 
 namespace TAG.Things.OpenAI
 {
 	/// <summary>
-	/// Implements a bridge between XMPP and ChatGPT
+	/// Implements a bridge between XMPP and DALL-E
 	/// </summary>
-	public class ChatGPTXmppBridge : OpenAiXmppExtensionNode
+	public class DallEXmppBridge : OpenAiXmppExtensionNode
 	{
-		private static Cache<CaseInsensitiveString, ChatHistory> sessions =
-			new Cache<CaseInsensitiveString, ChatHistory>(int.MaxValue, TimeSpan.FromDays(1), TimeSpan.FromMinutes(15));
-
 		/// <summary>
-		/// Implements a bridge between XMPP and ChatGPT
+		/// Implements a bridge between XMPP and DALL-E
 		/// </summary>
-		public ChatGPTXmppBridge()
+		public DallEXmppBridge()
 			: base()
 		{
 		}
 
 		/// <summary>
-		/// OpenAI API Key
+		/// Size of generated images.
 		/// </summary>
 		[Page(1, "OpenAI", 100)]
-		[Header(5, "Instructions:")]
-		[ToolTip(6, "Natural language discritpions to give OpenAI, instructing it what its role is.")]
-		public string Instructions { get; set; }
+		[Header(8, "Image Size:")]
+		[ToolTip(9, "Images generated will have this size.")]
+		[Option(ImageSize.ImageSize256x256, "256x256")]
+		[Option(ImageSize.ImageSize512x512, "512x512")]
+		[Option(ImageSize.ImageSize1024x1024, "1024x1024")]
+		public ImageSize ImageSize { get; set; }
 
 		/// <summary>
 		/// Gets the type name of the node.
@@ -45,7 +38,7 @@ namespace TAG.Things.OpenAI
 		/// <returns>Localized type node.</returns>
 		public override Task<string> GetTypeNameAsync(Language Language)
 		{
-			return Language.GetStringAsync(typeof(OpenAiXmppExtensionNode), 4, "ChatGPT-XMPP Bridge");
+			return Language.GetStringAsync(typeof(OpenAiXmppExtensionNode), 7, "DALL-E-XMPP Bridge");
 		}
 
 		/// <summary>
@@ -89,18 +82,9 @@ namespace TAG.Things.OpenAI
 					if (string.IsNullOrEmpty(Text))
 						return;
 
-					if (!sessions.TryGetValue(e.FromBareJID, out ChatHistory Session))
-					{
-						Session = new ChatHistory(e.FromBareJID);
-						sessions[e.FromBareJID] = Session;
-					}
+					Uri ImageUri = await Client.CreateImage(e.FromBareJID.ToLower(), this.ImageSize, Text);
 
-					Session.Add(new UserMessage(e.Body), 2000);
-
-					Message Response = await Client.ChatGPT(Session.User.LowerCase, Session.Messages);
-					Session.Add(Response, 2000);
-
-					XmppClient.SendChatMessage(e.From, Response.Content);
+					XmppClient.SendChatMessage(e.From, ImageUri.ToString());
 				}
 			}
 			catch (Exception ex)
@@ -108,5 +92,6 @@ namespace TAG.Things.OpenAI
 				XmppClient.SendChatMessage(e.From, ex.Message);
 			}
 		}
+
 	}
 }

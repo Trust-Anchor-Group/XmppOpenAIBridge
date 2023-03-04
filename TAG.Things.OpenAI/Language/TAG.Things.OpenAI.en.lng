@@ -8,9 +8,9 @@
 			<String id="4">ChatGPT-XMPP Bridge</String>
 			<String id="5">Instructions:</String>
 			<String id="6">Natural language discritpions to give OpenAI, instructing it what its role is.</String>
-			<String id="7"></String>
-			<String id="8"></String>
-			<String id="9"></String>
+			<String id="7">DALL-E-XMPP Bridge</String>
+			<String id="8">Image Size:</String>
+			<String id="9">Images generated will have this size.</String>
 			<String id="10"></String>
 			<String id="11"></String>
 			<String id="12"></String>
