@@ -63,3 +63,12 @@ package using the following information:
 |:-----------------|:----|
 | Package          | `TAG.XmppOpenAIBridge.package` |
 | Installation key | `XGyd1kOAZX3KMhpKLDJ0swJ0Bxwg1lF6Z/DgRScfo/Ys0dxfr4u7U/ofd4zjL00jpi5MJAOIpISAa4982aef95d5daae27ccbbe3f12c38ac` |
+
+## Building, Compiling & Debugging
+
+The repository assumes you have the [IoT Gateway](https://github.com/PeterWaher/IoTGateway) repository cloned in a folder called
+`C:\My Projects\IoT Gateway`, and that this repository is placed in `C:\My Projects\XmppOpenAIBridge`. You can place the
+repositories in different folders, but you need to update the build events accordingly. To run the application, you select the
+`TAG.Content.Markdown.OpenAI` project as your stardup project. It will execute the console version of the
+[IoT Gateway](https://github.com/PeterWaher/IoTGateway), and make sure the compiled files of the `XmppOpenAIBridge` solution
+is run with it.
