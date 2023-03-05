@@ -74,3 +74,37 @@ repositories in different folders, but you need to update the build events accor
 `TAG.Content.Markdown.OpenAI` project as your stardup project. It will execute the console version of the
 [IoT Gateway](https://github.com/PeterWaher/IoTGateway), and make sure the compiled files of the `XmppOpenAIBridge` solution
 is run with it.
+
+## Configuring bridges to OpenAI
+
+To create a bridge to OpenAI, the first step is to create a Bridge *node* on the gateway or Neuron. Once the package is installed,
+you can do this using, for instance, the *Simple IoT Client*, available in the [IoT Gateway](https://github.com/PeterWaher/IoTGateway)
+repository. Follow these steps:
+
+1. As an administrator of the Gateway, make sure your XMPP Address (JID) is on the list to receive notifications from the
+gateway. This way, the gateway knows you're an administrator.
+
+2. From your XMPP Client (for example, the *Simple IoT Client*), add your Gateway as a contact, and subscribe to its presence.
+
+3. Once you have an approved subscription, expand the contact, then expand the `MeteringTopology` source node, followed by
+the `Root` node.
+
+4. On the `Root` node, add one or more `XMPP Broker` nodes. Each `XMPP Broker` node, creates a separate XMPP connection. You can
+point this to the same Neuron, if you're hosting the bridge on a Neuron. If you're hosting the bridge on another type of Gateway,
+you need to point it to a Neuron, or some other XMPP Server. The `XMPP Broker` node will maintain a separate XMPP connection to this
+Broker, and will receive its own XMPP Address (or JID). The bridge you're creating will be reachable on this JID.
+
+	There are three tabs you need to fill in: On the `IP` Tab, you fill in information about the XMPP Server (or Neuron) you wish
+	to connect to. On the `XMPP` tab, you fill in information about the account you will use. On the `Roster` tab, you optionally
+	enter a regular expression that will be used to automatically accept presence subscription requests, if they come from JIDs
+	matching this expression.
+
+5. Once you have an XMPP connection for the bridge (i.e. the `XMPP Broker` node is created and works), you can add an OpenAI
+extension node to the `XMPP Broker` node. You select either a `ChatGPT-XMPP Bridge` node or a `DALL-E XMPP Bridge` node, depending
+on what type of bridge you want the connection to represent.
+
+	**Note**: It is important to provide the Open AI extension node with a proper identity (ID property). This identity is used in 
+	the Markdown integrations, to select the proper gateway to use when converting Markdown code blocks into presentable content.
+
+Once you have completed these steps, you can access the bridge, wither by chatting with them, using the JIDs you've defined above,
+or through Markdown, referencing the extensions defined.
