@@ -114,6 +114,8 @@ namespace TAG.Content.Markdown.OpenAI
 			if (!Directory.Exists(OpenAIContentFolder))
 				Directory.CreateDirectory(OpenAIContentFolder);
 
+			Initialized = true;
+
 			DeleteOldFiles(TimeSpan.FromDays(7));
 
 			return Task.CompletedTask;
