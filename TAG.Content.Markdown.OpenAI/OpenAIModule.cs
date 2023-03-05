@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using Waher.Events;
+using Waher.IoTGateway;
 using Waher.Runtime.Inventory;
 using Waher.Runtime.Timing;
 using Waher.Things;
@@ -41,15 +42,6 @@ namespace TAG.Content.Markdown.OpenAI
 		}
 
 		/// <summary>
-		/// Scheduler
-		/// </summary>
-		public static Scheduler Scheduler
-		{
-			get;
-			internal set;
-		}
-
-		/// <summary>
 		/// If the module owns the <see cref="Scheduler"/>.
 		/// </summary>
 		public static bool SchedulerOwnership
@@ -71,9 +63,7 @@ namespace TAG.Content.Markdown.OpenAI
 		{
 			Initialized = false;
 
-			if (!Types.TryGetModuleParameter("Root", out object Obj) ||
-				!(Obj is string RootFolder) ||
-				!Types.TryGetModuleParameter("Sources", out Obj) ||
+			if (!Types.TryGetModuleParameter("Sources", out object Obj) ||
 				!(Obj is IDataSource[] Sources) ||
 				!Types.TryGetModuleParameter("DefaultSource", out Obj) ||
 				!(Obj is string DefaultSourceID))
@@ -95,21 +85,7 @@ namespace TAG.Content.Markdown.OpenAI
 			if (DefaultSource is null)
 				return Task.CompletedTask;
 
-			OpenAIContentFolder = Path.Combine(RootFolder, "OpenAI");
-
-			if (Scheduler is null)
-			{
-				if (Types.TryGetModuleParameter("Scheduler", out Obj) && Obj is Scheduler Scheduler2)
-				{
-					Scheduler = Scheduler2;
-					SchedulerOwnership = false;
-				}
-				else
-				{
-					Scheduler = new Scheduler();
-					SchedulerOwnership = true;
-				}
-			}
+			OpenAIContentFolder = Path.Combine(Gateway.RootFolder, "OpenAI");
 
 			if (!Directory.Exists(OpenAIContentFolder))
 				Directory.CreateDirectory(OpenAIContentFolder);
@@ -127,12 +103,6 @@ namespace TAG.Content.Markdown.OpenAI
 		public Task Stop()
 		{
 			Initialized = false;
-
-			if (SchedulerOwnership)
-				Scheduler?.Dispose();
-
-			Scheduler = null;
-			SchedulerOwnership = false;
 
 			return Task.CompletedTask;
 		}
@@ -171,7 +141,7 @@ namespace TAG.Content.Markdown.OpenAI
 			{
 				lock (rnd)
 				{
-					Scheduler.Add(DateTime.Now.AddDays(rnd.NextDouble() * 2), DeleteOldFiles, MaxAge);
+					Gateway.ScheduleEvent(DeleteOldFiles, DateTime.Now.AddDays(rnd.NextDouble() * 2), MaxAge);
 				}
 			}
 		}
