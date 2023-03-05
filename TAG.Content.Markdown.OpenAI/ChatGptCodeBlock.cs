@@ -64,7 +64,6 @@ namespace TAG.Content.Markdown.OpenAI
 				return false;
 
 			return true;
-
 		}
 
 		/// <summary>
