@@ -49,7 +49,7 @@ namespace TAG.Things.OpenAI
 		public override Task RegisterExtension(XmppClient Client)
 		{
 			Client.OnChatMessage += this.Client_OnChatMessage;
-			return Task.CompletedTask;
+			return base.RegisterExtension(Client);
 		}
 
 		/// <summary>
@@ -59,7 +59,7 @@ namespace TAG.Things.OpenAI
 		public override Task UnregisterExtension(XmppClient Client)
 		{
 			Client.OnChatMessage -= this.Client_OnChatMessage;
-			return Task.CompletedTask;
+			return base.UnregisterExtension(Client);
 		}
 
 		private async Task Client_OnChatMessage(object Sender, MessageEventArgs e)

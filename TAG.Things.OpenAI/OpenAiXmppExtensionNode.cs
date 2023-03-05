@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using TAG.Networking.OpenAI;
 using Waher.Content;
 using Waher.Networking.Sniffers;
+using Waher.Networking.XMPP;
 using Waher.Runtime.Inventory;
 using Waher.Things.Attributes;
 using Waher.Things.Xmpp;
@@ -17,6 +18,7 @@ namespace TAG.Things.OpenAI
 	public abstract class OpenAiXmppExtensionNode : XmppExtensionNode, ISniffable
 	{
 		private readonly Sniffable sniffers = new Sniffable();
+		private readonly LinkedList<XmppClient> clients = new LinkedList<XmppClient>();
 
 		/// <summary>
 		/// Abstract base class for OpenAI extension nodes.
@@ -81,6 +83,36 @@ namespace TAG.Things.OpenAI
 			Text = await Client.Whisper(ParsedUri);
 
 			return Text;
+		}
+
+		/// <summary>
+		/// Registers the extension with an XMPP Client.
+		/// </summary>
+		/// <param name="Client">XMPP Client</param>
+		public override Task RegisterExtension(XmppClient Client)
+		{
+			this.clients.AddLast(Client);
+			return Task.CompletedTask;
+		}
+
+		/// <summary>
+		/// Unregisters the extension from an XMPP Client.
+		/// </summary>
+		/// <param name="Client">XMPP Client</param>
+		public override Task UnregisterExtension(XmppClient Client)
+		{
+			this.clients.Remove(Client);
+			return Task.CompletedTask;
+		}
+
+		/// <summary>
+		/// Checks if the extension has been registered on an XMPP Client.
+		/// </summary>
+		/// <param name="Client">XMPP Client.</param>
+		/// <returns>If the extension has been registered.</returns>
+		public override bool IsRegisteredExtension(XmppClient Client)
+		{
+			return this.clients.Contains(Client);
 		}
 	}
 }
