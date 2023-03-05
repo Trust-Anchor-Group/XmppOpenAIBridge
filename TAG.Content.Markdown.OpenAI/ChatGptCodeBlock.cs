@@ -108,9 +108,14 @@ namespace TAG.Content.Markdown.OpenAI
 		{
 			string Text = await GetText(Language, Rows);
 
-			Output.Append("<p>");
-			Output.Append(XML.HtmlValueEncode(Text));
-			Output.AppendLine("</p>");
+			string[] Paragraphs = Text.Replace("\r\n", "\n").Replace('\r', '\n').Split(new string[] { "\n\n" }, StringSplitOptions.RemoveEmptyEntries);
+
+			foreach (string Paragraph in Paragraphs)
+			{
+				Output.Append("<p>");
+				Output.Append(XML.HtmlValueEncode(Paragraph));
+				Output.AppendLine("</p>");
+			}
 
 			return true;
 		}
@@ -144,7 +149,7 @@ namespace TAG.Content.Markdown.OpenAI
 				try
 				{
 					Text = await ChatGptBridge.GetText(Description);
-					
+
 					await Resources.WriteAllTextAsync(FileName, Text, Encoding.UTF8);
 				}
 				catch (Exception)

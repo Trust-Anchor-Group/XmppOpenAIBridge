@@ -139,7 +139,7 @@ namespace TAG.Content.Markdown.OpenAI
 				FileName = "/" + FileName;
 
 			Output.Append("<figure>");
-			Output.Append("<img src=\"");
+			Output.Append("<img src=\"/OpenAI");
 			Output.Append(XML.HtmlAttributeEncode(FileName));
 
 			if (!string.IsNullOrEmpty(Info.Title))
@@ -201,7 +201,7 @@ namespace TAG.Content.Markdown.OpenAI
 			{
 				try
 				{
-					Uri ImageUri = await DalleBridge.GetImageUri(Description);
+					Uri ImageUri = await DalleBridge.GetImageUri(Description, Result.ImageSize);
 					KeyValuePair<string, TemporaryStream> P = await InternetContent.GetTempStreamAsync(ImageUri);
 
 					using (TemporaryStream f = P.Value)
