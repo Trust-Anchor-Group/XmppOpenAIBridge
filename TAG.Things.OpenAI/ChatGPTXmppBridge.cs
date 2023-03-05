@@ -81,6 +81,10 @@ namespace TAG.Things.OpenAI
 			{
 				using (OpenAIClient Client = new OpenAIClient(this.ApiKey, this.Sniffers))
 				{
+					string MessageId = Guid.NewGuid().ToString();
+					XmppClient.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, MessageId, e.From, 
+						string.Empty, "⧖", string.Empty, string.Empty, string.Empty, string.Empty, null, null);
+
 					string Text = await ConvertTextIfSpeech(Client, e.Body);
 					if (string.IsNullOrEmpty(Text))
 						return;
@@ -96,7 +100,9 @@ namespace TAG.Things.OpenAI
 					Message Response = await Client.ChatGPT(Session.User.LowerCase, Session.Messages);
 					Session.Add(Response, 2000);
 
-					XmppClient.SendChatMessage(e.From, Response.Content);
+					XmppClient.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, e.From,
+						"<replace id='" + MessageId + "' xmlns='urn:xmpp:message-correct:0'/>", Response.Content,
+						string.Empty, string.Empty, string.Empty, string.Empty, null, null);
 				}
 			}
 			catch (Exception ex)

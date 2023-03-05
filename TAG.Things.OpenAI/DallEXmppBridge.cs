@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using TAG.Networking.OpenAI;
 using Waher.Networking.XMPP;
 using Waher.Runtime.Language;
-using Waher.Script.Constants;
 using Waher.Things.Attributes;
 
 namespace TAG.Things.OpenAI
@@ -79,13 +78,19 @@ namespace TAG.Things.OpenAI
 			{
 				using (OpenAIClient Client = new OpenAIClient(this.ApiKey, this.Sniffers))
 				{
+					string MessageId = Guid.NewGuid().ToString();
+					XmppClient.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, MessageId, e.From,
+						string.Empty, "⧖", string.Empty, string.Empty, string.Empty, string.Empty, null, null);
+
 					string Text = await ConvertTextIfSpeech(Client, e.Body);
 					if (string.IsNullOrEmpty(Text))
 						return;
 
 					Uri ImageUri = await Client.CreateImage(e.FromBareJID.ToLower(), this.ImageSize, Text);
 
-					XmppClient.SendChatMessage(e.From, ImageUri.ToString());
+					XmppClient.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, e.From,
+						"<replace id='" + MessageId + "' xmlns='urn:xmpp:message-correct:0'/>", ImageUri.ToString(),
+						string.Empty, string.Empty, string.Empty, string.Empty, null, null);
 				}
 			}
 			catch (Exception ex)
