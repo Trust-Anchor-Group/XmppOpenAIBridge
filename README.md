@@ -109,4 +109,4 @@ on what type of bridge you want the connection to represent.
 Once you have completed these steps, you can access the bridge, wither by chatting with them, using the JIDs you've defined above,
 or through Markdown, referencing the extensions defined.
 
-![Example configuration](Images/ExampleConfiguration.png)
+![Example configuration](Images/ExampleConfiguration.png 637 727)
