@@ -34,6 +34,7 @@ namespace TAG.Things.OpenAI
 		[Page(1, "OpenAI", 100)]
 		[Header(2, "API Key:")]
 		[ToolTip(3, "API Key used when communicating with the OpenAI API.")]
+		[Masked]
 		public string ApiKey { get; set; }
 
 		#region ISniffable
