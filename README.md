@@ -4,6 +4,8 @@ Provides a bridge between the XMPP Instant Messaging protocol, and OpenAI. The s
 also provides integration with Markdown, allowing for easy use of image and text generation
 services provided by OpenAI in Markdown-based content.
 
+## Projects
+
 The solution contains the following C# projects:
 
 | Project                       | Framework         | Description |
@@ -12,6 +14,8 @@ The solution contains the following C# projects:
 | `TAG.Networking.OpenAI`       | .NET Standard 2.0 | Class library for communicating with OpenAI services via the [OpenAI API](https://platform.openai.com/overview). |
 | `TAG.Networking.OpenAI.Test`  | .NET 6.0          | Unit tests for the `TAG.Networking.OpenAI` library. |
 | `TAG.Things.OpenAI`           | .NET Standard 2.0 | Publishes harmonized interfaces for administering access to OpenAI. The harmonized nodes allow for custom bridging between users of the XMPP protocol and services published by the OpenAI API, such as chatting and image generation. |
+
+## Nugets
 
 The following nugets external are used. They faciliate common programming tasks, and
 enables the libraries to be hosted on an [IoT Gateway](https://github.com/PeterWaher/IoTGateway).
@@ -41,3 +45,21 @@ The Unit Tests further use the following libraries:
 | [Waher.Runtime.Inventory](https://www.nuget.org/packages/Waher.Runtime.Inventory/)               | Maintains an inventory of type definitions in the runtime environment, and permits easy instantiation of suitable classes, and inversion of control (IoC). |
 | [Waher.Runtime.Inventory.Loader](https://www.nuget.org/packages/Waher.Runtime.Inventory.Loader/) | Permits the inventory and seamless integration of classes defined in all available assemblies. |
 | [Waher.Runtime.Settings](https://www.nuget.org/packages/Waher.Runtime.Settings/)                 | Provides easy access to persistent settings. |
+
+## Installable Package
+
+The `TAG.Content.Markdown.OpenAI` project has been made into a package that can be downloaded and installed on any 
+[TAG Neuron](https://lab.tagroot.io/Documentation/Index.md), or run on any [IoT Gateway](https://github.com/PeterWaher/IoTGateway).
+To create a package, that can be distributed or installed, you begin by creating a *manifest file*. The
+`TAG.Content.Markdown.OpenAI` project has a manifest file called `TAG.Content.Markdown.OpenAI.manifest`. It defines the
+assemblies and content files included in the package. You then use the `Waher.Utility.Install` and `Waher.Utility.Sign` command-line
+tools in the [IoT Gateway](https://github.com/PeterWaher/IoTGateway) repository, to create a package file and cryptographically
+sign it for secure distribution across the Neuron network.
+
+The XMPP/OpenAI Bridge is published as a package on TAG Neurons. If your neuron is connected to this network, you can install the
+package using the following information:
+
+| Package information ||
+|:-----------------|:----|
+| Package          | `TAG.XmppOpenAIBridge.package` |
+| Installation key | `XGyd1kOAZX3KMhpKLDJ0swJ0Bxwg1lF6Z/DgRScfo/Ys0dxfr4u7U/ofd4zjL00jpi5MJAOIpISAa4982aef95d5daae27ccbbe3f12c38ac` |
