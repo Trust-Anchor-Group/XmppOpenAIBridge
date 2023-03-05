@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using TAG.Networking.OpenAI;
 using TAG.Networking.OpenAI.Messages;
-using Waher.Content;
 using Waher.Networking.XMPP;
 using Waher.Persistence;
 using Waher.Runtime.Cache;
-using Waher.Runtime.Inventory;
 using Waher.Runtime.Language;
-using Waher.Runtime.Temporary;
 using Waher.Things.Attributes;
 
 namespace TAG.Things.OpenAI
@@ -19,7 +15,7 @@ namespace TAG.Things.OpenAI
 	/// </summary>
 	public class ChatGPTXmppBridge : OpenAiXmppExtensionNode
 	{
-		private static Cache<CaseInsensitiveString, ChatHistory> sessions =
+		private readonly static Cache<CaseInsensitiveString, ChatHistory> sessions =
 			new Cache<CaseInsensitiveString, ChatHistory>(int.MaxValue, TimeSpan.FromDays(1), TimeSpan.FromMinutes(15));
 
 		/// <summary>
@@ -107,6 +103,30 @@ namespace TAG.Things.OpenAI
 			{
 				XmppClient.SendChatMessage(e.From, ex.Message);
 			}
+		}
+
+		/// <summary>
+		/// Gets generated text from a conversation.
+		/// </summary>
+		/// <param name="Messages">Conversation</param>
+		/// <returns>Generated message</returns>
+		public async Task<Message> GetText(params Message[] Messages)
+		{
+			using (OpenAIClient Client = new OpenAIClient(this.ApiKey, this.Sniffers))
+			{
+				return await Client.ChatGPT(Messages);
+			}
+		}
+
+		/// <summary>
+		/// Gets generated text from a text.
+		/// </summary>
+		/// <param name="Messages">Textual message description</param>
+		/// <returns>Generated message</returns>
+		public async Task<string> GetText(string Message)
+		{
+			Message Result = await this.GetText(new UserMessage(Message));
+			return Result.Content;
 		}
 	}
 }

@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Waher.Content" Version="2.5.4" />
+    <PackageReference Include="Waher.Content.Markdown" Version="2.3.0" />
+    <PackageReference Include="Waher.Runtime.Timing" Version="1.0.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TAG.Networking.OpenAI\TAG.Networking.OpenAI.csproj" />
+    <ProjectReference Include="..\TAG.Things.OpenAI\TAG.Things.OpenAI.csproj" />
+  </ItemGroup>
+
+</Project>

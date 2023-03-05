@@ -71,6 +71,20 @@ namespace TAG.Networking.OpenAI
 		/// <returns>Message response.</returns>
 		/// <exception cref="Exception">If unable to communicate with API, 
 		/// if exceeding limits, or if something unexpected happened.</exception>
+		public Task<Message> ChatGPT(params Message[] Messages)
+		{
+			return this.ChatGPT(string.Empty, Messages);
+		}
+
+		/// <summary>
+		/// Performs a request to OpenAI ChatGPT turbo 3.5, and returns the textual
+		/// response.
+		/// </summary>
+		/// <param name="User">User performing the action.</param>
+		/// <param name="Messages">Messages in conversation.</param>
+		/// <returns>Message response.</returns>
+		/// <exception cref="Exception">If unable to communicate with API, 
+		/// if exceeding limits, or if something unexpected happened.</exception>
 		public Task<Message> ChatGPT(string User, params Message[] Messages)
 		{
 			return this.ChatGPT(User, (IEnumerable<Message>)Messages);
@@ -101,9 +115,11 @@ namespace TAG.Networking.OpenAI
 			Dictionary<string, object> Request = new Dictionary<string, object>()
 			{
 				{ "model", "gpt-3.5-turbo" },
-				{ "user", User },
 				{ "messages", Messages2.ToArray() },
 			};
+
+			if (!string.IsNullOrEmpty(User))
+				Request["user"] = User;
 
 			if (this.HasSniffers)
 			{
@@ -348,9 +364,11 @@ namespace TAG.Networking.OpenAI
 			Dictionary<string, object> Request = new Dictionary<string, object>()
 			{
 				{ "prompt", Description },
-				{ "user", User },
 				{ "n", NumberOfImages }
 			};
+
+			if (!string.IsNullOrEmpty(User))
+				Request["user"] = User;
 
 			switch (Size)
 			{
