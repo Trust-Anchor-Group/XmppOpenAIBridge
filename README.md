@@ -163,10 +163,18 @@ You can try the bridges without installing the package, by connecting and chatti
 If you use an XMPP Client / Chat Client, that can scan QR codes, you can also scan the following codes to interact with the
 above bridges:
 
+### ChatGPT
+
 ![chatgpt@lab.tagroot.io](https://lab.tagroot.io/QR/xmpp:chatgpt@lab.tagroot.io)
+
+### DALL-E (256x256)
 
 ![dalle256@lab.tagroot.io](https://lab.tagroot.io/QR/xmpp:dalle256@lab.tagroot.io)
 
+### DALL-E (512x125)
+
 ![dalle512@lab.tagroot.io](https://lab.tagroot.io/QR/xmpp:dalle512@lab.tagroot.io)
+
+### DALL-E (1024x1024)
 
 ![dalle1024@lab.tagroot.io](https://lab.tagroot.io/QR/xmpp:dalle1024@lab.tagroot.io)
