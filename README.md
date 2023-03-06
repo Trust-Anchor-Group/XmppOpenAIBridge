@@ -106,6 +106,10 @@ on what type of bridge you want the connection to represent.
 	**Note**: It is important to provide the Open AI extension node with a proper identity (ID property). This identity is used in 
 	the Markdown integrations, to select the proper gateway to use when converting Markdown code blocks into presentable content.
 
+	**Note 2**: When creating a `ChatGPT-XMPP Bridge` node, make sure to provide proper *instructions* in the corresponding field.
+	These instructions are human-readable text that describes the role OpenAI has in the chat. This is the only mechanism available
+	to customize ChatGPT.
+
 Once you have completed these steps, you can access the bridge, wither by chatting with them, using the JIDs you've defined above,
 or through Markdown, referencing the extensions defined.
 
