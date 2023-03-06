@@ -147,3 +147,26 @@ value. The text after the colon `:` is the title of the code block, and will be 
 **Note**: It is the node defined above, that contains the API Key. This key is necessary for making the call. You can use
 different nodes in different content, if you wish to use different API Keys (and therefore distribute associated costs, depending
 on type of content.)
+
+## Trying the XMPP Bridges
+
+You can try the bridges without installing the package, by connecting and chatting with the following JIDs:
+
+| Open OpenAI-bridges available ||
+| JID | Description              |
+|:---------------------------|:------------------------------------------------|
+| `chatgpt@lab.tagroot.io`   | ChatGPT-XMPP bridge with minimal instruction.   |
+| `dalle256@lab.tagroot.io`  | DALL-E-XMPP bridge generating 256x256 images.   |
+| `dalle512@lab.tagroot.io`  | DALL-E-XMPP bridge generating 512x512 images.   |
+| `dalle1024@lab.tagroot.io` | DALL-E-XMPP bridge generating 1024x1024 images. |
+
+If you use an XMPP Client / Chat Client, that can scan QR codes, you can also scan the following codes to interact with the
+above bridges:
+
+![chatgpt@lab.tagroot.io](https://lab.tagroot.io/QR/xmpp:chatgpt@lab.tagroot.io)
+
+![dalle256@lab.tagroot.io](https://lab.tagroot.io/QR/xmpp:dalle256@lab.tagroot.io)
+
+![dalle512@lab.tagroot.io](https://lab.tagroot.io/QR/xmpp:dalle512@lab.tagroot.io)
+
+![dalle1024@lab.tagroot.io](https://lab.tagroot.io/QR/xmpp:dalle1024@lab.tagroot.io)
