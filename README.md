@@ -65,6 +65,7 @@ package using the following information:
 |:-----------------|:----|
 | Package          | `TAG.XmppOpenAIBridge.package` |
 | Installation key | `XGyd1kOAZX3KMhpKLDJ0swJ0Bxwg1lF6Z/DgRScfo/Ys0dxfr4u7U/ofd4zjL00jpi5MJAOIpISAa4982aef95d5daae27ccbbe3f12c38ac` |
+| More Information | <https://lab.tagroot.io/Community/Post/OpenAI_integration_with_the_Neuron> |
 
 ## Building, Compiling & Debugging
 
