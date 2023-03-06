@@ -148,6 +148,14 @@ value. The text after the colon `:` is the title of the code block, and will be 
 different nodes in different content, if you wish to use different API Keys (and therefore distribute associated costs, depending
 on type of content.)
 
+## Speech to text conversion
+
+The OpenAI bridges support speech to text conversion. To use this function simply send an URI that points to the audio containing
+the speech. In XMPP this can be achieved in various ways:
+
+1. Upload audio file to Neuron using HTTP-upload, and send the resulting URI
+2. Publish access to the audio file via the [HTTPX XEP-0332 extension](https://xmpp.org/extensions/xep-0332.html).
+
 ## Trying the XMPP Bridges
 
 You can try the bridges without installing the package, by connecting and chatting with the following JIDs:
