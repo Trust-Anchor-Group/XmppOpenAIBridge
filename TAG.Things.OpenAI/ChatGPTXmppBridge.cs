@@ -81,27 +81,38 @@ namespace TAG.Things.OpenAI
 			{
 				using (OpenAIClient Client = new OpenAIClient(this.ApiKey, this.Sniffers))
 				{
+					string Text = e.Body.Trim();
+					if (string.IsNullOrEmpty(Text))
+						return;
+
 					string MessageId = Guid.NewGuid().ToString();
 					XmppClient.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, MessageId, e.From, 
 						string.Empty, "⧖", string.Empty, string.Empty, string.Empty, string.Empty, null, null);
 
-					string Text = await ConvertTextIfSpeech(Client, e.Body);
-					if (string.IsNullOrEmpty(Text))
-						return;
+					Text = await ConvertTextIfSpeech(Client, Text);
+					
+					string Response;
 
-					if (!sessions.TryGetValue(e.FromBareJID, out ChatHistory Session))
+					if (string.IsNullOrEmpty(Text))
+						Response = "?";
+					else
 					{
-						Session = new ChatHistory(e.FromBareJID);
-						sessions[e.FromBareJID] = Session;
+						if (!sessions.TryGetValue(e.FromBareJID, out ChatHistory Session))
+						{
+							Session = new ChatHistory(e.FromBareJID);
+							sessions[e.FromBareJID] = Session;
+						}
+
+						Session.Add(new UserMessage(e.Body), 2000);
+
+						Message Response2 = await Client.ChatGPT(Session.User.LowerCase, Session.Messages);
+						Session.Add(Response2, 2000);
+
+						Response = Response2.Content;
 					}
 
-					Session.Add(new UserMessage(e.Body), 2000);
-
-					Message Response = await Client.ChatGPT(Session.User.LowerCase, Session.Messages);
-					Session.Add(Response, 2000);
-
 					XmppClient.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, e.From,
-						"<replace id='" + MessageId + "' xmlns='urn:xmpp:message-correct:0'/>", Response.Content,
+						"<replace id='" + MessageId + "' xmlns='urn:xmpp:message-correct:0'/>", Response,
 						string.Empty, string.Empty, string.Empty, string.Empty, null, null);
 				}
 			}
