@@ -177,6 +177,10 @@ namespace TAG.Things.OpenAI
 						Xml.Append(XML.HtmlAttributeEncode(Text.Replace('\r', ' ').Replace('\n', ' ')));
 						Xml.Append("'/></body></html>");
 
+						Xml.Append("<x xmlns='jabber:x:oob'><url>");
+						Xml.Append(XML.Encode(ImageUrl));
+						Xml.Append("</url></x>");
+
 						ResponseText = ImageUrl;
 					}
 
