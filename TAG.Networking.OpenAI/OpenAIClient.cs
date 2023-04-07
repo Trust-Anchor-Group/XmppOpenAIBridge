@@ -458,11 +458,8 @@ namespace TAG.Networking.OpenAI
 		}
 
 		/// <summary>
-		/// Performs a request to OpenAI ChatGPT turbo 3.5, and returns the textual
-		/// response.
+		/// Lists uploaded files.
 		/// </summary>
-		/// <param name="User">User performing the action.</param>
-		/// <param name="Messages">Messages in conversation.</param>
 		/// <returns>File references.</returns>
 		/// <exception cref="Exception">If unable to communicate with API, 
 		/// if exceeding limits, or if something unexpected happened.</exception>
@@ -480,7 +477,7 @@ namespace TAG.Networking.OpenAI
 
 			try
 			{
-				object ResponseObj = await InternetContent.GetAsync(filesUri, 
+				object ResponseObj = await InternetContent.GetAsync(filesUri,
 					new KeyValuePair<string, string>("Accept", "application/json"),
 					new KeyValuePair<string, string>("Authorization", "Bearer " + this.apiKey));
 
@@ -502,6 +499,144 @@ namespace TAG.Networking.OpenAI
 				}
 
 				return Result.ToArray();
+			}
+			catch (WebException ex)
+			{
+				throw this.ProcessWebException(ex);
+			}
+		}
+
+		/// <summary>
+		/// Uploads a file
+		/// </summary>
+		/// <param name="FullFileName">Full filename of file to upload.</param>
+		/// <param name="Purpose">Purpose of file.</param>
+		/// <returns>File reference object.</returns>
+		public async Task<FileReference> UploadFile(string FullFileName, Purpose Purpose)
+		{
+			byte[] Bin = await Resources.ReadAllBytesAsync(FullFileName);
+			string ContentType = InternetContent.GetContentType(Path.GetExtension(FullFileName));
+
+			return await this.UploadFile(Bin, ContentType, Path.GetFileName(FullFileName), Purpose);
+		}
+
+		/// <summary>
+		/// Uploads a file
+		/// </summary>
+		/// <param name="TextContent">Text content.</param>
+		/// <param name="FileName">Name of file.</param>
+		/// <param name="Purpose">Purpose of file.</param>
+		/// <returns>File reference object.</returns>
+		public Task<FileReference> UploadFile(string TextContent, string FileName, Purpose Purpose)
+		{
+			byte[] Bin = Encoding.UTF8.GetBytes(TextContent);
+
+			return this.UploadFile(Bin, "text/plain; charset=utf-8", FileName, Purpose);
+		}
+
+		/// <summary>
+		/// Uploads a file
+		/// </summary>
+		/// <param name="Data">Binary encoding of file.</param>
+		/// <param name="ContentType">Content-Type</param>
+		/// <param name="FileName">Name of file.</param>
+		/// <param name="Purpose">Purpose of file.</param>
+		/// <returns>File reference object.</returns>
+		public async Task<FileReference> UploadFile(byte[] Data, string ContentType, string FileName, Purpose Purpose)
+		{
+			KeyValuePair<byte[], string> P = await FormDataDecoder.Encode(new EmbeddedContent[]
+			{
+				new EmbeddedContent()
+				{
+					Name = "file",
+					Raw = Data,
+					ContentType = ContentType,
+					Disposition = ContentDisposition.FormData,
+					FileName = FileName
+				},
+				new EmbeddedContent()
+				{
+					Name = "purpose",
+					Raw = Encoding.UTF8.GetBytes(Purpose.ToString().Replace('_','-')),
+					ContentType = "text/plain",
+					Disposition = ContentDisposition.FormData
+				}
+			});
+
+			byte[] Encoded = P.Key;
+			string EncodedContentType = P.Value;
+
+			if (this.HasSniffers)
+			{
+				StringBuilder sb = new StringBuilder();
+				sb.Append("POST(");
+				sb.Append(filesUri.ToString());
+				sb.Append(",\"");
+				sb.Append(EncodedContentType);
+				sb.AppendLine("\",");
+				sb.Append(Encoding.UTF8.GetString(Encoded));
+				sb.Append(")");
+
+				this.TransmitText(sb.ToString());
+			}
+
+			try
+			{
+				KeyValuePair<byte[], string> P2 = await InternetContent.PostAsync(filesUri,
+					Encoded, EncodedContentType,
+					new KeyValuePair<string, string>("Accept", "application/json"),
+					new KeyValuePair<string, string>("Authorization", "Bearer " + this.apiKey));
+
+				object ResponseObj = await InternetContent.DecodeAsync(P2.Value, P2.Key, audioTranscriptionsUri);
+
+				if (this.HasSniffers)
+					this.ReceiveText(JSON.Encode(ResponseObj, true));
+
+				if (!FileReference.TryParse(ResponseObj, out FileReference Result))
+					throw new Exception("Unexpected response returned: " + ResponseObj.GetType().FullName);
+
+				return Result;
+			}
+			catch (WebException ex)
+			{
+				throw this.ProcessWebException(ex);
+			}
+		}
+
+		/// <summary>
+		/// Gets a file reference object, given the file ID.
+		/// </summary>
+		/// <param name="FileId">File ID</param>
+		/// <returns>File reference.</returns>
+		/// <exception cref="Exception">If unable to communicate with API, 
+		/// if exceeding limits, or if something unexpected happened.</exception>
+		public async Task<FileReference> GetFileReference(string FileId)
+		{
+			Uri Uri = new Uri(filesUri.ToString() + "/" + FileId);
+
+			if (this.HasSniffers)
+			{
+				StringBuilder sb = new StringBuilder();
+				sb.Append("GET(");
+				sb.Append(Uri.ToString());
+				sb.Append(")");
+
+				this.TransmitText(sb.ToString());
+			}
+
+			try
+			{
+				object ResponseObj = await InternetContent.GetAsync(Uri,
+					new KeyValuePair<string, string>("Accept", "application/json"),
+					new KeyValuePair<string, string>("Authorization", "Bearer " + this.apiKey));
+
+				if (this.HasSniffers)
+					this.ReceiveText(JSON.Encode(ResponseObj, true));
+
+				if (!FileReference.TryParse(ResponseObj, out FileReference Ref))
+					throw new Exception("Unexpected response returned: " + ResponseObj.GetType().FullName);
+
+				return Ref;
 			}
 			catch (WebException ex)
 			{

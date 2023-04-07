@@ -176,5 +176,35 @@ namespace TAG.Networking.OpenAI.Test
 				Console.Out.WriteLine(Ref.Id + "\t" + Ref.Purpose + "\t" + Ref.Bytes + "\t" + Ref.FileName);
 		}
 
+		[TestMethod]
+		public async Task Test_07_UploadJsonLinesFileForFineTuning()
+		{
+			Assert.IsNotNull(client);
+
+			FileReference Ref = await client.UploadFile(
+				"{\"prompt\":\"Was Kilroy here?\",\"completion\":\"Yes, Kilroy was here.\"}",
+				"Kilroy.jsonl", Purpose.fine_tune);
+
+			Console.Out.WriteLine(Ref.Id + "\t" + Ref.Purpose + "\t" + Ref.Bytes + "\t" + Ref.FileName);
+		}
+
+		[TestMethod]
+		public async Task Test_08_GetFileReference()
+		{
+			Assert.IsNotNull(client);
+
+			FileReference Ref = await client.UploadFile(
+				"{\"prompt\":\"Was Kilroy here?\",\"completion\":\"Yes, Kilroy was here.\"}",
+				"Kilroy.jsonl", Purpose.fine_tune);
+
+			FileReference Ref2 = await client.GetFileReference(Ref.Id);
+
+			Assert.AreEqual(Ref.Id, Ref2.Id);
+			Assert.AreEqual(Ref.Bytes, Ref2.Bytes);
+			Assert.AreEqual(Ref.Created, Ref2.Created);
+			Assert.AreEqual(Ref.FileName, Ref2.FileName);
+			Assert.AreEqual(Ref.Purpose, Ref2.Purpose);
+		}
+
 	}
 }
