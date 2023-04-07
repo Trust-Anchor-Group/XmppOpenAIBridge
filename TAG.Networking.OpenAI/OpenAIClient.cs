@@ -35,6 +35,9 @@ namespace TAG.Networking.OpenAI
 
 	/// <summary>
 	/// Client for communicating with the OpenAI API.
+	/// 
+	/// Reference:
+	/// https://platform.openai.com/docs/api-reference
 	/// </summary>
 	public class OpenAIClient : Sniffable, IDisposable
 	{

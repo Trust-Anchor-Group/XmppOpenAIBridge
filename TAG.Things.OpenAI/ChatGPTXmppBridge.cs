@@ -69,22 +69,22 @@ namespace TAG.Things.OpenAI
 			if (!(Sender is XmppClient XmppClient))
 				return;
 
-			RosterItem Contact = XmppClient.GetRosterItem(e.FromBareJID);
-			if (Contact is null ||
-				(Contact.State != SubscriptionState.Both &&
-				Contact.State != SubscriptionState.From))
-			{
-				return;
-			}
-
 			try
 			{
+				RosterItem Contact = XmppClient.GetRosterItem(e.FromBareJID);
+				if (Contact is null ||
+					(Contact.State != SubscriptionState.Both &&
+					Contact.State != SubscriptionState.From))
+				{
+					return;
+				}
+
+				string Text = e.Body?.Trim();
+				if (string.IsNullOrEmpty(Text))
+					return;
+
 				using (OpenAIClient Client = new OpenAIClient(this.ApiKey, this.Sniffers))
 				{
-					string Text = e.Body.Trim();
-					if (string.IsNullOrEmpty(Text))
-						return;
-
 					string MessageId = Guid.NewGuid().ToString();
 					XmppClient.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, MessageId, e.From, 
 						string.Empty, "⧖", string.Empty, string.Empty, string.Empty, string.Empty, null, null);
