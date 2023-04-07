@@ -45,6 +45,7 @@ namespace TAG.Networking.OpenAI
 		private static readonly Uri audioTranscriptionsUri = new Uri("https://api.openai.com/v1/audio/transcriptions");
 		private static readonly Uri imagesGenerationsUri = new Uri("https://api.openai.com/v1/images/generations");
 
+		private readonly string model;
 		private readonly string apiKey;
 
 		/// <summary>
@@ -53,8 +54,20 @@ namespace TAG.Networking.OpenAI
 		/// <param name="ApiKey">API Key</param>
 		/// <param name="Sniffers">Optional sniffers</param>
 		public OpenAIClient(string ApiKey, params ISniffer[] Sniffers)
+			: this("gpt-3.5-turbo", ApiKey, Sniffers)
+		{
+		}
+
+		/// <summary>
+		/// Client for communicating with the OpenAI API.
+		/// </summary>
+		/// <param name="Model">Model to use.</param>
+		/// <param name="ApiKey">API Key</param>
+		/// <param name="Sniffers">Optional sniffers</param>
+		public OpenAIClient(string Model, string ApiKey, params ISniffer[] Sniffers)
 			: base(Sniffers)
 		{
+			this.model = Model;
 			this.apiKey = ApiKey;
 		}
 
@@ -117,7 +130,7 @@ namespace TAG.Networking.OpenAI
 
 			Dictionary<string, object> Request = new Dictionary<string, object>()
 			{
-				{ "model", "gpt-3.5-turbo" },
+				{ "model", this.model },
 				{ "messages", Messages2.ToArray() },
 			};
 
