@@ -644,5 +644,76 @@ namespace TAG.Networking.OpenAI
 			}
 		}
 
+		/// <summary>
+		/// Gets the contents of a file, given the file ID.
+		/// </summary>
+		/// <param name="FileId">File ID</param>
+		/// <returns>File content.</returns>
+		/// <exception cref="Exception">If unable to communicate with API, 
+		/// if exceeding limits, or if something unexpected happened.</exception>
+		public async Task<object> GetFileContent(string FileId)
+		{
+			Uri Uri = new Uri(filesUri.ToString() + "/" + FileId + "/content");
+
+			if (this.HasSniffers)
+			{
+				StringBuilder sb = new StringBuilder();
+				sb.Append("GET(");
+				sb.Append(Uri.ToString());
+				sb.Append(")");
+
+				this.TransmitText(sb.ToString());
+			}
+
+			try
+			{
+				object ResponseObj = await InternetContent.GetAsync(Uri,
+					new KeyValuePair<string, string>("Authorization", "Bearer " + this.apiKey));
+
+				if (this.HasSniffers)
+					this.ReceiveText(JSON.Encode(ResponseObj, true));
+
+				return ResponseObj;
+			}
+			catch (WebException ex)
+			{
+				throw this.ProcessWebException(ex);
+			}
+		}
+
+		/// <summary>
+		/// Deletes a file, given the file ID.
+		/// </summary>
+		/// <param name="FileId">File ID</param>
+		/// <exception cref="Exception">If unable to communicate with API, 
+		/// if exceeding limits, or if something unexpected happened.</exception>
+		public async Task DeleteFile(string FileId)
+		{
+			Uri Uri = new Uri(filesUri.ToString() + "/" + FileId);
+
+			if (this.HasSniffers)
+			{
+				StringBuilder sb = new StringBuilder();
+				sb.Append("DELETE(");
+				sb.Append(Uri.ToString());
+				sb.Append(")");
+
+				this.TransmitText(sb.ToString());
+			}
+
+			try
+			{
+				object ResponseObj = await InternetContent.DeleteAsync(Uri,
+					new KeyValuePair<string, string>("Authorization", "Bearer " + this.apiKey));
+
+				if (this.HasSniffers)
+					this.ReceiveText(JSON.Encode(ResponseObj, true));
+			}
+			catch (WebException ex)
+			{
+				throw this.ProcessWebException(ex);
+			}
+		}
+
 	}
 }

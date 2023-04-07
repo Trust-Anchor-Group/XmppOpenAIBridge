@@ -206,5 +206,36 @@ namespace TAG.Networking.OpenAI.Test
 			Assert.AreEqual(Ref.Purpose, Ref2.Purpose);
 		}
 
+		[TestMethod]
+		[Ignore]
+		public async Task Test_09_GetFileContent()
+		{
+			Assert.IsNotNull(client);
+
+			string Content = "{\"prompt\":\"Was Kilroy here?\",\"completion\":\"Yes, Kilroy was here.\"}";
+			FileReference Ref = await client.UploadFile(
+				Content, "Kilroy.jsonl", Purpose.fine_tune);
+
+			object Obj = await client.GetFileContent(Ref.Id);
+			if (Obj is string Content2)
+				Assert.AreEqual(Content, Content2);
+			else
+				Assert.Fail();
+		}
+
+		[TestMethod]
+		public async Task Test_10_DeleteFile()
+		{
+			Assert.IsNotNull(client);
+
+			FileReference Ref = await client.UploadFile(
+				"{\"prompt\":\"Was Kilroy here?\",\"completion\":\"Yes, Kilroy was here.\"}",
+				"Kilroy.jsonl", Purpose.fine_tune);
+
+			await Task.Delay(1000);
+
+			await client.DeleteFile(Ref.Id);
+		}
+
 	}
 }
