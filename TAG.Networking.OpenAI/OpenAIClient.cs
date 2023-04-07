@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using TAG.Networking.OpenAI.Files;
 using TAG.Networking.OpenAI.Messages;
 using Waher.Content;
 using Waher.Content.Getters;
@@ -44,6 +45,7 @@ namespace TAG.Networking.OpenAI
 		private static readonly Uri chatCompletionsUri = new Uri("https://api.openai.com/v1/chat/completions");
 		private static readonly Uri audioTranscriptionsUri = new Uri("https://api.openai.com/v1/audio/transcriptions");
 		private static readonly Uri imagesGenerationsUri = new Uri("https://api.openai.com/v1/images/generations");
+		private static readonly Uri filesUri = new Uri("https://api.openai.com/v1/files");
 
 		private readonly string model;
 		private readonly string apiKey;
@@ -448,6 +450,58 @@ namespace TAG.Networking.OpenAI
 				}
 
 				return Uris;
+			}
+			catch (WebException ex)
+			{
+				throw this.ProcessWebException(ex);
+			}
+		}
+
+		/// <summary>
+		/// Performs a request to OpenAI ChatGPT turbo 3.5, and returns the textual
+		/// response.
+		/// </summary>
+		/// <param name="User">User performing the action.</param>
+		/// <param name="Messages">Messages in conversation.</param>
+		/// <returns>File references.</returns>
+		/// <exception cref="Exception">If unable to communicate with API, 
+		/// if exceeding limits, or if something unexpected happened.</exception>
+		public async Task<FileReference[]> ListFiles()
+		{
+			if (this.HasSniffers)
+			{
+				StringBuilder sb = new StringBuilder();
+				sb.Append("GET(");
+				sb.Append(filesUri.ToString());
+				sb.Append(")");
+
+				this.TransmitText(sb.ToString());
+			}
+
+			try
+			{
+				object ResponseObj = await InternetContent.GetAsync(filesUri, 
+					new KeyValuePair<string, string>("Accept", "application/json"),
+					new KeyValuePair<string, string>("Authorization", "Bearer " + this.apiKey));
+
+				if (this.HasSniffers)
+					this.ReceiveText(JSON.Encode(ResponseObj, true));
+
+				if (!(ResponseObj is Dictionary<string, object> Response))
+					throw new Exception("Unexpected response returned: " + ResponseObj.GetType().FullName);
+
+				if (!Response.TryGetValue("data", out object Obj) || !(Obj is Array Data))
+					throw new Exception("Unexpected response.");
+
+				List<FileReference> Result = new List<FileReference>();
+
+				foreach (object Item in Data)
+				{
+					if (FileReference.TryParse(Item, out FileReference Ref))
+						Result.Add(Ref);
+				}
+
+				return Result.ToArray();
 			}
 			catch (WebException ex)
 			{

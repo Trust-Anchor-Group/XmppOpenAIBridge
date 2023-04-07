@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Text;
+using TAG.Networking.OpenAI.Files;
 using TAG.Networking.OpenAI.Messages;
 using Waher.Content;
 using Waher.Events;
@@ -162,6 +163,17 @@ namespace TAG.Networking.OpenAI.Test
 			{
 				f.Dispose();
 			}
+		}
+
+		[TestMethod]
+		public async Task Test_06_ListFiles()
+		{
+			Assert.IsNotNull(client);
+
+			FileReference[] References = await client.ListFiles();
+
+			foreach (FileReference Ref in References)
+				Console.Out.WriteLine(Ref.Id + "\t" + Ref.Purpose + "\t" + Ref.Bytes + "\t" + Ref.FileName);
 		}
 
 	}
