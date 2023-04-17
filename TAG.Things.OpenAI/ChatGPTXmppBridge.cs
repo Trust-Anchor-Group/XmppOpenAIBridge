@@ -110,6 +110,8 @@ namespace TAG.Things.OpenAI
 							{
 								Session = new ChatHistory(e.FromBareJID);
 								sessions[e.FromBareJID] = Session;
+
+								Session.Add(new SystemMessage(this.Instructions), 2000);
 							}
 
 							Session.Add(new UserMessage(e.Body), 2000);
