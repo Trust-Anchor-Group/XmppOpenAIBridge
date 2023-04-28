@@ -70,7 +70,7 @@ namespace TAG.Things.OpenAI
 			if (!InternetContent.CanHead(ParsedUri, out Grade _, out IContentHeader Header))
 				return Text;
 
-			object Obj = await Header.HeadAsync(ParsedUri, null, 10000);
+			object Obj = await Header.HeadAsync(ParsedUri, null, null, 10000);
 			if (!(Obj is Dictionary<string, object> Headers))
 				return null;
 
