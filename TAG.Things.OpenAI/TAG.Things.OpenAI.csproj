@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Waher.Content.Markdown" Version="2.3.6" />
+    <PackageReference Include="Waher.Content.Markdown" Version="2.4.0" />
     <PackageReference Include="Waher.Content.Xml" Version="2.1.1" />
     <PackageReference Include="Waher.IoTGateway" Version="1.5.1" />
     <PackageReference Include="Waher.Runtime.Cache" Version="1.0.6" />
