@@ -3,6 +3,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TAG.Networking.OpenAI;
 using TAG.Networking.OpenAI.Messages;
+using Waher.IoTGateway;
 using Waher.Networking.XMPP;
 using Waher.Persistence;
 using Waher.Runtime.Cache;
@@ -113,7 +114,7 @@ namespace TAG.Things.OpenAI
 							bool First = true;
 
 							Message Response2 = await Client.ChatGPT(Session.User.LowerCase, Session.Messages,
-								(Sender2, e2) =>
+								async (Sender2, e2) =>
 								{
 									StringBuilder Xml = new StringBuilder();
 
@@ -131,11 +132,11 @@ namespace TAG.Things.OpenAI
 									else
 										Xml.Append("<composing xmlns='http://jabber.org/protocol/chatstates'/>");
 
-									XmppClient.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, e.From,
-										Xml.ToString(), string.IsNullOrEmpty(e2.Total) ? "⧖" : e2.Total,
-										string.Empty, string.Empty, string.Empty, string.Empty, null, null);
+									string Markdown = string.IsNullOrEmpty(e2.Total) ? "⧖" : e2.Total;
+									Xml.Append(await Gateway.GetMultiFormatChatMessageXml(Markdown, true, true));
 
-									return Task.CompletedTask;
+									XmppClient.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, e.From,
+										Xml.ToString(), string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, null, null);
 								}, null);
 
 							Session.Add(Response2, 2000);
