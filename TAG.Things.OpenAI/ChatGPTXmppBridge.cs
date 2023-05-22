@@ -122,6 +122,7 @@ namespace TAG.Things.OpenAI
 									if (Now.Subtract(Last).TotalSeconds < 1)
 										return;
 
+									Last = Now;
 									Xml.Clear();
 
 									if (First)
