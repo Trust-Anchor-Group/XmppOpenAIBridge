@@ -1,13 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using TAG.Networking.OpenAI.Files;
 using TAG.Networking.OpenAI.Messages;
 using Waher.Content;
 using Waher.Content.Getters;
 using Waher.Content.Multipart;
+using Waher.Events;
 using Waher.Networking.Sniffers;
 using Waher.Runtime.Temporary;
 
@@ -91,7 +95,7 @@ namespace TAG.Networking.OpenAI
 		/// if exceeding limits, or if something unexpected happened.</exception>
 		public Task<Message> ChatGPT(params Message[] Messages)
 		{
-			return this.ChatGPT(string.Empty, Messages);
+			return this.ChatGPT(string.Empty, Messages, null, null);
 		}
 
 		/// <summary>
@@ -105,7 +109,7 @@ namespace TAG.Networking.OpenAI
 		/// if exceeding limits, or if something unexpected happened.</exception>
 		public Task<Message> ChatGPT(string User, params Message[] Messages)
 		{
-			return this.ChatGPT(User, (IEnumerable<Message>)Messages);
+			return this.ChatGPT(User, Messages, null, null);
 		}
 
 		/// <summary>
@@ -117,7 +121,21 @@ namespace TAG.Networking.OpenAI
 		/// <returns>Message response.</returns>
 		/// <exception cref="Exception">If unable to communicate with API, 
 		/// if exceeding limits, or if something unexpected happened.</exception>
-		public async Task<Message> ChatGPT(string User, IEnumerable<Message> Messages)
+		public Task<Message> ChatGPT(string User, IEnumerable<Message> Messages)
+		{
+			return this.ChatGPT(User, Messages, null, null);
+		}
+
+		/// <summary>
+		/// Performs a request to OpenAI ChatGPT turbo 3.5, and returns the textual
+		/// response.
+		/// </summary>
+		/// <param name="User">User performing the action.</param>
+		/// <param name="Messages">Messages in conversation.</param>
+		/// <returns>Message response.</returns>
+		/// <exception cref="Exception">If unable to communicate with API, 
+		/// if exceeding limits, or if something unexpected happened.</exception>
+		public async Task<Message> ChatGPT(string User, IEnumerable<Message> Messages, StreamEventHandler StreamCallback, object State)
 		{
 			List<Dictionary<string, object>> Messages2 = new List<Dictionary<string, object>>();
 
@@ -139,6 +157,9 @@ namespace TAG.Networking.OpenAI
 			if (!string.IsNullOrEmpty(User))
 				Request["user"] = User;
 
+			if (!(StreamCallback is null))
+				Request["stream"] = true;
+
 			if (this.HasSniffers)
 			{
 				StringBuilder sb = new StringBuilder();
@@ -153,28 +174,181 @@ namespace TAG.Networking.OpenAI
 
 			try
 			{
-				object ResponseObj = await InternetContent.PostAsync(chatCompletionsUri, Request,
-					new KeyValuePair<string, string>("Accept", "application/json"),
-					new KeyValuePair<string, string>("Authorization", "Bearer " + this.apiKey));
+				Message Result;
 
-				if (this.HasSniffers)
-					this.ReceiveText(JSON.Encode(ResponseObj, true));
-
-				if (!(ResponseObj is Dictionary<string, object> Response))
-					throw new Exception("Unexpected response returned: " + ResponseObj.GetType().FullName);
-
-				if (!Response.TryGetValue("choices", out object Obj) ||
-					!(Obj is Array Choices) ||
-					Choices.Length == 0 ||
-					!(Choices.GetValue(0) is Dictionary<string, object> Option) ||
-					!Option.TryGetValue("message", out Obj) ||
-					!(Obj is Dictionary<string, object> MessageObj))
+				if (StreamCallback is null)
 				{
-					throw new Exception("Message not found in response.");
-				}
+					object ResponseObj = await InternetContent.PostAsync(chatCompletionsUri, Request,
+						new KeyValuePair<string, string>("Accept", "application/json"),
+						new KeyValuePair<string, string>("Authorization", "Bearer " + this.apiKey));
 
-				if (!Message.TryParse(MessageObj, out Message Result))
-					throw new Exception("Unable to parse message in response.");
+					if (this.HasSniffers)
+						this.ReceiveText(JSON.Encode(ResponseObj, true));
+
+					if (!(ResponseObj is Dictionary<string, object> Response))
+						throw new Exception("Unexpected response returned: " + ResponseObj.GetType().FullName);
+
+					if (!Response.TryGetValue("choices", out object Obj) ||
+						!(Obj is Array Choices) ||
+						Choices.Length == 0 ||
+						!(Choices.GetValue(0) is Dictionary<string, object> Option) ||
+						!Option.TryGetValue("message", out Obj) ||
+						!(Obj is Dictionary<string, object> MessageObj))
+					{
+						throw new Exception("Message not found in response.");
+					}
+
+					if (!Message.TryParse(MessageObj, out Result))
+						throw new Exception("Unable to parse message in response.");
+				}
+				else
+				{
+					HttpClient Client = null;
+					HttpRequestMessage HttpRequest = null;
+					HttpResponseMessage HttpResponse = null;
+					Stream ResponseStream = null;
+					StreamReader ResponseReader = null;
+
+					try
+					{
+						Client = new HttpClient();
+
+						HttpRequest = new HttpRequestMessage(HttpMethod.Post, chatCompletionsUri)
+						{
+							Content = new StringContent(JSON.Encode(Request, false), Encoding.UTF8, "application/json"),
+						};
+
+						HttpRequest.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/event-stream"));
+						HttpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", this.apiKey);
+
+						HttpResponse = await Client.SendAsync(HttpRequest, HttpCompletionOption.ResponseHeadersRead);
+						HttpResponse.EnsureSuccessStatusCode();
+
+						ResponseStream = await HttpResponse.Content.ReadAsStreamAsync();
+						ResponseReader = new StreamReader(ResponseStream);
+
+						Result = null;
+
+						bool Finished = false;
+
+						while (!ResponseReader.EndOfStream)
+						{
+							string Line = await ResponseReader.ReadLineAsync();
+							object ResponseObj;
+
+							if (this.HasSniffers)
+								this.ReceiveText(Line);
+
+							if (Line.StartsWith("data:"))
+							{
+								Line = Line.Substring(5);
+
+								try
+								{
+									ResponseObj = JSON.Parse(Line);
+								}
+								catch (Exception ex)
+								{
+									if (this.HasSniffers)
+										this.Error(ex.Message);
+
+									continue;
+								}
+
+								if (!(ResponseObj is Dictionary<string, object> Response))
+								{
+									if (this.HasSniffers)
+										this.Error("Unexpected response returned: " + ResponseObj.GetType().FullName);
+
+									continue;
+								}
+
+								if (!Response.TryGetValue("choices", out object Obj) ||
+									!(Obj is Array Choices) ||
+									Choices.Length == 0 ||
+									!(Choices.GetValue(0) is Dictionary<string, object> Option) ||
+									!Option.TryGetValue("delta", out Obj) ||
+									!(Obj is Dictionary<string, object> DeltaObj))
+								{
+									if (this.HasSniffers)
+										this.Error("Delta not found in response.");
+
+									continue;
+								}
+
+								if (!Message.TryParseDelta(DeltaObj, ref Result, out string Diff))
+								{
+									if (this.HasSniffers)
+										this.Error("Unable to parse response.");
+
+									continue;
+								}
+
+								if (Option.TryGetValue("finish_reason", out Obj) &&
+									Obj is string FinishReason &&
+									FinishReason == "stop")
+								{
+									Finished = true;
+								}
+
+								try
+								{
+									StreamEventArgs e = new StreamEventArgs(Result.Content, Diff, Finished, State);
+
+									await StreamCallback(this, e);
+								}
+								catch (Exception ex)
+								{
+									Log.Critical(ex);
+								}
+
+								if (Finished)
+									break;
+							}
+							else if (Line.Trim() == "[DONE]")
+							{
+								if (!Finished)
+								{
+									Finished = true;
+
+									try
+									{
+										StreamEventArgs e = new StreamEventArgs(Result.Content, string.Empty, Finished, State);
+
+										await StreamCallback(this, e);
+									}
+									catch (Exception ex)
+									{
+										Log.Critical(ex);
+									}
+								}
+
+								break;
+							}
+						}
+
+						if (!Finished)
+						{
+							try
+							{
+								StreamEventArgs e = new StreamEventArgs(Result.Content, string.Empty, true, State);
+								await StreamCallback(this, e);
+							}
+							catch (Exception ex)
+							{
+								Log.Critical(ex);
+							}
+						}
+					}
+					finally
+					{
+						ResponseReader?.Dispose();
+						ResponseStream?.Dispose();
+						HttpResponse?.Dispose();
+						HttpRequest?.Dispose();
+						Client?.Dispose();
+					}
+				}
 
 				return Result;
 			}

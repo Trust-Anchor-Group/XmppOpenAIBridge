@@ -24,7 +24,11 @@ namespace TAG.Networking.OpenAI.Messages
 		/// <summary>
 		/// Content of message
 		/// </summary>
-		public string Content { get; }
+		public string Content 
+		{ 
+			get;
+			internal set;
+		}
 
 		/// <summary>
 		/// Parses a message object returned from the API.
@@ -58,6 +62,45 @@ namespace TAG.Networking.OpenAI.Messages
 
 				default:
 					return false;
+			}
+
+			return true;
+		}
+
+		public static bool TryParseDelta(Dictionary<string, object> Message, ref Message Parsed, out string Diff)
+		{
+			object Obj;
+
+			Diff = null;
+
+			if (Parsed is null)
+			{
+				if (!Message.TryGetValue("role", out Obj) || !(Obj is string Role))
+					return false;
+
+				switch (Role)
+				{
+					case "system":
+						Parsed = new SystemMessage(string.Empty);
+						break;
+
+					case "user":
+						Parsed = new UserMessage(string.Empty);
+						break;
+
+					case "assistant":
+						Parsed = new AssistantMessage(string.Empty);
+						break;
+
+					default:
+						return false;
+				}
+			}
+
+			if (Message.TryGetValue("content", out Obj) && Obj is string Content)
+			{
+				Parsed.Content += Content;
+				Diff = Content;
 			}
 
 			return true;

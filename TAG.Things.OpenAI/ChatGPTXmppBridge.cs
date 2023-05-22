@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using System.Threading.Tasks;
 using TAG.Networking.OpenAI;
 using TAG.Networking.OpenAI.Messages;
@@ -6,6 +7,7 @@ using Waher.Networking.XMPP;
 using Waher.Persistence;
 using Waher.Runtime.Cache;
 using Waher.Runtime.Language;
+using Waher.Script.Functions.Strings;
 using Waher.Things.Attributes;
 
 namespace TAG.Things.OpenAI
@@ -93,18 +95,9 @@ namespace TAG.Things.OpenAI
 				{
 					using (OpenAIClient Client = new OpenAIClient(this.ApiKey, this.Sniffers))
 					{
-						string MessageId = Guid.NewGuid().ToString();
-						XmppClient.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, MessageId, e.From,
-							"<composing xmlns='http://jabber.org/protocol/chatstates'/>", "⧖", string.Empty, 
-							string.Empty, string.Empty, string.Empty, null, null);
-
 						Text = await ConvertTextIfSpeech(Client, Text);
 
-						string Response;
-
-						if (string.IsNullOrEmpty(Text))
-							Response = "?";
-						else
+						if (!string.IsNullOrEmpty(Text))
 						{
 							if (!sessions.TryGetValue(e.FromBareJID, out ChatHistory Session))
 							{
@@ -116,16 +109,37 @@ namespace TAG.Things.OpenAI
 
 							Session.Add(new UserMessage(e.Body), 2000);
 
-							Message Response2 = await Client.ChatGPT(Session.User.LowerCase, Session.Messages);
+							string MessageId = Guid.NewGuid().ToString();
+							bool First = true;
+
+							Message Response2 = await Client.ChatGPT(Session.User.LowerCase, Session.Messages,
+								(Sender2, e2) =>
+								{
+									StringBuilder Xml = new StringBuilder();
+
+									if (First)
+										First = false;
+									else
+									{
+										Xml.Append("<replace id='");
+										Xml.Append(MessageId);
+										Xml.Append("' xmlns='urn:xmpp:message-correct:0'/>");
+									}
+
+									if (e2.Finished)
+										Xml.Append("<active xmlns='http://jabber.org/protocol/chatstates'/>");
+									else
+										Xml.Append("<composing xmlns='http://jabber.org/protocol/chatstates'/>");
+
+									XmppClient.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, e.From,
+										Xml.ToString(), string.IsNullOrEmpty(e2.Total) ? "⧖" : e2.Total,
+										string.Empty, string.Empty, string.Empty, string.Empty, null, null);
+
+									return Task.CompletedTask;
+								}, null);
+
 							Session.Add(Response2, 2000);
-
-							Response = Response2.Content;
 						}
-
-						XmppClient.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, e.From,
-							"<replace id='" + MessageId + "' xmlns='urn:xmpp:message-correct:0'/>" +
-							"<active xmlns='http://jabber.org/protocol/chatstates'/>", Response,
-							string.Empty, string.Empty, string.Empty, string.Empty, null, null);
 					}
 				}
 				catch (Exception ex)

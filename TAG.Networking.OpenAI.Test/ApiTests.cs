@@ -237,5 +237,35 @@ namespace TAG.Networking.OpenAI.Test
 			await client.DeleteFile(Ref.Id);
 		}
 
+		[TestMethod]
+		public async Task Test_11_ChatGPT_Streaming()
+		{
+			Assert.IsNotNull(client);
+
+			bool Finished = false;
+
+			Message Response = await client.ChatGPT("UnitTest",
+				new Message[] 
+				{ 
+					new UserMessage("Can you write a 1000-character poem? If you cannot create a poem, create any text of 1000 characters. It must have at least three paragraphs, with empty rows between paragraphs. Please use Markdown to format the poem so it looks nice. Include a header, some text that is bold, some that is italic and some that is underlined.") 
+				},
+				(sender, e) =>
+				{
+					Console.Error.Write(e.Diff);
+
+					if (e.Finished)
+						Finished = true;
+
+					return Task.CompletedTask;
+				}, null);
+
+			Console.Error.WriteLine();
+			Console.Error.WriteLine();
+			Console.Error.WriteLine();
+			Console.Error.WriteLine(Response.Content);
+
+			Assert.IsTrue(Finished);
+		}
+
 	}
 }
