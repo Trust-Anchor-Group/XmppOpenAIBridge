@@ -112,11 +112,17 @@ namespace TAG.Things.OpenAI
 
 							string MessageId = Guid.NewGuid().ToString();
 							bool First = true;
+							StringBuilder Xml = new StringBuilder();
+							DateTime Last = DateTime.MinValue;
 
 							Message Response2 = await Client.ChatGPT(Session.User.LowerCase, Session.Messages,
 								async (Sender2, e2) =>
 								{
-									StringBuilder Xml = new StringBuilder();
+									DateTime Now = DateTime.Now;
+									if (Now.Subtract(Last).TotalSeconds < 1)
+										return;
+
+									Xml.Clear();
 
 									if (First)
 										First = false;
@@ -139,6 +145,22 @@ namespace TAG.Things.OpenAI
 										e.From, Xml.ToString(), string.Empty, string.Empty, string.Empty, string.Empty, 
 										string.Empty, null, null);
 								}, null);
+
+							Xml.Clear();
+
+							if (!First)
+							{
+								Xml.Append("<replace id='");
+								Xml.Append(MessageId);
+								Xml.Append("' xmlns='urn:xmpp:message-correct:0'/>");
+							}
+
+							Xml.Append("<active xmlns='http://jabber.org/protocol/chatstates'/>");
+							Xml.Append(await Gateway.GetMultiFormatChatMessageXml(Response2.Content, true, true));
+
+							XmppClient.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, MessageId,
+								e.From, Xml.ToString(), string.Empty, string.Empty, string.Empty, string.Empty,
+								string.Empty, null, null);
 
 							Session.Add(Response2, 2000);
 						}
