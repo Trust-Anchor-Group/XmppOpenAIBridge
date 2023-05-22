@@ -135,8 +135,9 @@ namespace TAG.Things.OpenAI
 									string Markdown = string.IsNullOrEmpty(e2.Total) ? "⧖" : e2.Total;
 									Xml.Append(await Gateway.GetMultiFormatChatMessageXml(Markdown, true, true));
 
-									XmppClient.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, e.From,
-										Xml.ToString(), string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, null, null);
+									XmppClient.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, MessageId,
+										e.From, Xml.ToString(), string.Empty, string.Empty, string.Empty, string.Empty, 
+										string.Empty, null, null);
 								}, null);
 
 							Session.Add(Response2, 2000);
