@@ -7,8 +7,10 @@ using TAG.Things.OpenAI;
 using Waher.Content;
 using Waher.Content.Markdown;
 using Waher.Content.Markdown.Model;
+using Waher.Content.Markdown.Model.SpanElements;
 using Waher.Content.Xml;
 using Waher.Runtime.Inventory;
+using Waher.Script;
 using Waher.Security;
 using Waher.Things;
 
@@ -106,8 +108,45 @@ namespace TAG.Content.Markdown.OpenAI
 		/// <returns>If content was rendered. If returning false, the default rendering of the code block will be performed.</returns>
 		public async Task<bool> GenerateHTML(StringBuilder Output, string[] Rows, string Language, int Indent, MarkdownDocument Document)
 		{
-			string Text = await GetText(Language, Rows);
+			string Text = await GetText(Language, Rows, false);
+			if (!(Text is null))
+			{
+				this.GenerateHTML(Output, Text);
+				return true;
+			}
 
+			string Title;
+			int i = Language.IndexOf(':');
+			if (i > 0)
+				Title = Language.Substring(i + 1).Trim();
+			else
+				Title = null;
+
+			string Id = await OpenAIModule.AsyncHtmlOutput.GenerateStub(MarkdownOutputType.Html, Output, Title);
+
+			Document.QueueAsyncTask(async () =>
+			{
+				Output = new StringBuilder();
+
+				try
+				{
+					Text = await GetText(Language, Rows, true);
+					if (!(Text is null))
+						this.GenerateHTML(Output, Text);
+				}
+				catch (Exception ex)
+				{
+					await InlineScript.GenerateHTML(ex, Output, true, new Variables());
+				}
+
+				await OpenAIModule.AsyncHtmlOutput.ReportResult(MarkdownOutputType.Html, Id, Output.ToString());
+			});
+
+			return true;
+		}
+
+		private void GenerateHTML(StringBuilder Output, string Text)
+		{
 			string[] Paragraphs = Text.Replace("\r\n", "\n").Replace('\r', '\n').Split(new string[] { "\n\n" }, StringSplitOptions.RemoveEmptyEntries);
 
 			foreach (string Paragraph in Paragraphs)
@@ -116,8 +155,6 @@ namespace TAG.Content.Markdown.OpenAI
 				Output.Append(XML.HtmlValueEncode(Paragraph));
 				Output.AppendLine("</p>");
 			}
-
-			return true;
 		}
 
 		/// <summary>
@@ -125,9 +162,9 @@ namespace TAG.Content.Markdown.OpenAI
 		/// </summary>
 		/// <param name="Language">Language</param>
 		/// <param name="Rows">Code Block rows</param>
-		/// <param name="Session">Session variables.</param>
+		/// <param name="GenerateIfNotExists">If a file should be generated, if one is not found.</param>
 		/// <returns>File name</returns>
-		private static async Task<string> GetText(string Language, string[] Rows)
+		private static async Task<string> GetText(string Language, string[] Rows, bool GenerateIfNotExists)
 		{
 			string Description = MarkdownDocument.AppendRows(Rows);
 
@@ -143,19 +180,20 @@ namespace TAG.Content.Markdown.OpenAI
 			string Text;
 
 			if (File.Exists(FileName))
-				Text = await Resources.ReadAllTextAsync(FileName);
-			else
-			{
-				try
-				{
-					Text = await ChatGptBridge.GetText(Description);
+				return await Resources.ReadAllTextAsync(FileName);
 
-					await Resources.WriteAllTextAsync(FileName, Text, Encoding.UTF8);
-				}
-				catch (Exception)
-				{
-					return Description;
-				}
+			if (!GenerateIfNotExists)
+				return null;
+
+			try
+			{
+				Text = await ChatGptBridge.GetText(Description);
+
+				await Resources.WriteAllTextAsync(FileName, Text, Encoding.UTF8);
+			}
+			catch (Exception)
+			{
+				return Description;
 			}
 
 			return Text;
@@ -172,7 +210,7 @@ namespace TAG.Content.Markdown.OpenAI
 		/// <returns>If content was rendered. If returning false, the default rendering of the code block will be performed.</returns>
 		public async Task<bool> GeneratePlainText(StringBuilder Output, string[] Rows, string Language, int Indent, MarkdownDocument Document)
 		{
-			string Text = await GetText(Language, Rows);
+			string Text = await GetText(Language, Rows, true);
 
 			Output.AppendLine(Text);
 			Output.AppendLine();
@@ -192,7 +230,7 @@ namespace TAG.Content.Markdown.OpenAI
 		/// <returns>If content was rendered. If returning false, the default rendering of the code block will be performed.</returns>
 		public async Task<bool> GenerateXAML(XmlWriter Output, TextAlignment TextAlignment, string[] Rows, string Language, int Indent, MarkdownDocument Document)
 		{
-			string Text = await GetText(Language, Rows);
+			string Text = await GetText(Language, Rows, true);
 
 			Output.WriteStartElement("TextBlock");
 			Output.WriteAttributeString("TextWrapping", "Wrap");
@@ -219,7 +257,7 @@ namespace TAG.Content.Markdown.OpenAI
 		/// <returns>If content was rendered. If returning false, the default rendering of the code block will be performed.</returns>
 		public async Task<bool> GenerateXamarinForms(XmlWriter Output, XamarinRenderingState State, string[] Rows, string Language, int Indent, MarkdownDocument Document)
 		{
-			string Text = await GetText(Language, Rows);
+			string Text = await GetText(Language, Rows, true);
 
 			Output.WriteStartElement("ContentView");
 			Output.WriteAttributeString("Padding", Document.Settings.XamlSettings.ParagraphMargins);
@@ -260,7 +298,7 @@ namespace TAG.Content.Markdown.OpenAI
 		public async Task<bool> GenerateLaTeX(StringBuilder Output, string[] Rows, string Language, int Indent,
 			MarkdownDocument Document)
 		{
-			string Text = await GetText(Language, Rows);
+			string Text = await GetText(Language, Rows, true);
 
 			Output.AppendLine(Text);
 			Output.AppendLine();

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using Waher.Content.Markdown;
 using Waher.Events;
 using Waher.IoTGateway;
 using Waher.Runtime.Inventory;
@@ -15,6 +16,7 @@ namespace TAG.Content.Markdown.OpenAI
 	public class OpenAIModule : IModule
 	{
 		private static readonly Random rnd = new Random();
+		private static IMarkdownAsynchronousOutput asyncHtmlOutput = null;
 
 		/// <summary>
 		/// Module that controls the life-cycle of the OpenAI integration.
@@ -57,6 +59,11 @@ namespace TAG.Content.Markdown.OpenAI
 		}
 
 		/// <summary>
+		/// Interface for outputting asynchronously generated HTML to clients.
+		/// </summary>
+		public static IMarkdownAsynchronousOutput AsyncHtmlOutput => asyncHtmlOutput;
+
+		/// <summary>
 		/// Starts the module.
 		/// </summary>
 		public Task Start()
@@ -71,6 +78,7 @@ namespace TAG.Content.Markdown.OpenAI
 				return Task.CompletedTask;
 			}
 
+			asyncHtmlOutput = Types.FindBest<IMarkdownAsynchronousOutput, MarkdownOutputType>(MarkdownOutputType.Html);
 			DefaultSource = null;
 
 			foreach (IDataSource Source in Sources)

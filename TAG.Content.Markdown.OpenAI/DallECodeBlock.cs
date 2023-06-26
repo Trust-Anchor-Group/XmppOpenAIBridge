@@ -14,6 +14,7 @@ using Waher.Content.Markdown.Model.SpanElements;
 using Waher.Content.Xml;
 using Waher.Runtime.Inventory;
 using Waher.Runtime.Temporary;
+using Waher.Script;
 using Waher.Script.Graphs;
 using Waher.Security;
 using Waher.Things;
@@ -130,10 +131,45 @@ namespace TAG.Content.Markdown.OpenAI
 		/// <returns>If content was rendered. If returning false, the default rendering of the code block will be performed.</returns>
 		public async Task<bool> GenerateHTML(StringBuilder Output, string[] Rows, string Language, int Indent, MarkdownDocument Document)
 		{
-			GraphInfo Info = await GetFileName(Language, Rows);
-			if (Info?.FileName is null)
-				return false;
+			GraphInfo Info = await GetFileName(Language, Rows, OpenAIModule.AsyncHtmlOutput is null);
+			if (!(Info is null))
+			{
+				this.GenerateHTML(Output, Info);
+				return true;
+			}
 
+			string Title;
+			int i = Language.IndexOf(':');
+			if (i > 0)
+				Title = Language.Substring(i + 1).Trim();
+			else
+				Title = null;
+
+			string Id = await OpenAIModule.AsyncHtmlOutput.GenerateStub(MarkdownOutputType.Html, Output, Title);
+
+			Document.QueueAsyncTask(async () =>
+			{
+				Output = new StringBuilder();
+
+				try
+				{
+					Info = await GetFileName(Language, Rows, true);
+					if (!(Info is null))
+						this.GenerateHTML(Output, Info);
+				}
+				catch (Exception ex)
+				{
+					await InlineScript.GenerateHTML(ex, Output, true, new Variables());
+				}
+
+				await OpenAIModule.AsyncHtmlOutput.ReportResult(MarkdownOutputType.Html, Id, Output.ToString());
+			});
+
+			return true;
+		}
+
+		private void GenerateHTML(StringBuilder Output, GraphInfo Info)
+		{
 			string FileName = Info.FileName.Substring(OpenAIModule.OpenAIContentFolder.Length).Replace(Path.DirectorySeparatorChar, '/');
 			if (!FileName.StartsWith("/"))
 				FileName = "/" + FileName;
@@ -161,8 +197,6 @@ namespace TAG.Content.Markdown.OpenAI
 			}
 
 			Output.AppendLine("</figure>");
-
-			return true;
 		}
 
 		private class GraphInfo
@@ -177,8 +211,9 @@ namespace TAG.Content.Markdown.OpenAI
 		/// </summary>
 		/// <param name="Language">Language</param>
 		/// <param name="Rows">Code Block rows</param>
+		/// <param name="GenerateIfNotExists">If a file should be generated, if one is not found.</param>
 		/// <returns>File name</returns>
-		private static async Task<GraphInfo> GetFileName(string Language, string[] Rows)
+		private static async Task<GraphInfo> GetFileName(string Language, string[] Rows, bool GenerateIfNotExists)
 		{
 			if (!TryParse(Language, out string NodeId, out string Title, out ImageSize? Size))
 				return null;
@@ -197,28 +232,31 @@ namespace TAG.Content.Markdown.OpenAI
 			string Hash = Hashes.ComputeSHA256HashString(Encoding.UTF8.GetBytes(DalleBridge.ApiKey + Description + Language + Result.ImageSize.ToString()));
 			Result.FileName = Path.Combine(OpenAIModule.OpenAIContentFolder, Hash) + ".png";
 
-			if (!File.Exists(Result.FileName))
+			if (File.Exists(Result.FileName))
+				return Result;
+
+			if (!GenerateIfNotExists)
+				return null;
+
+			try
 			{
-				try
+				Uri ImageUri = await DalleBridge.GetImageUri(Description, Result.ImageSize);
+				KeyValuePair<string, TemporaryStream> P = await InternetContent.GetTempStreamAsync(ImageUri);
+
+				using (TemporaryStream f = P.Value)
 				{
-					Uri ImageUri = await DalleBridge.GetImageUri(Description, Result.ImageSize);
-					KeyValuePair<string, TemporaryStream> P = await InternetContent.GetTempStreamAsync(ImageUri);
+					int c = (int)Math.Min(int.MaxValue, f.Length);
+					byte[] Bin = new byte[c];
 
-					using (TemporaryStream f = P.Value)
-					{
-						int c = (int)Math.Min(int.MaxValue, f.Length);
-						byte[] Bin = new byte[c];
+					f.Position = 0;
+					await f.ReadAsync(Bin, 0, c);
 
-						f.Position = 0;
-						await f.ReadAsync(Bin, 0, c);
-
-						await Resources.WriteAllBytesAsync(Result.FileName, Bin);
-					}
+					await Resources.WriteAllBytesAsync(Result.FileName, Bin);
 				}
-				catch (Exception)
-				{
-					return null;
-				}
+			}
+			catch (Exception)
+			{
+				return null;
 			}
 
 			return Result;
@@ -253,7 +291,7 @@ namespace TAG.Content.Markdown.OpenAI
 		/// <returns>If content was rendered. If returning false, the default rendering of the code block will be performed.</returns>
 		public async Task<bool> GenerateXAML(XmlWriter Output, TextAlignment TextAlignment, string[] Rows, string Language, int Indent, MarkdownDocument Document)
 		{
-			GraphInfo Info = await GetFileName(Language, Rows);
+			GraphInfo Info = await GetFileName(Language, Rows, true);
 			if (Info?.FileName is null)
 				return false;
 
@@ -281,7 +319,7 @@ namespace TAG.Content.Markdown.OpenAI
 		/// <returns>If content was rendered. If returning false, the default rendering of the code block will be performed.</returns>
 		public async Task<bool> GenerateXamarinForms(XmlWriter Output, XamarinRenderingState State, string[] Rows, string Language, int Indent, MarkdownDocument Document)
 		{
-			GraphInfo Info = await GetFileName(Language, Rows);
+			GraphInfo Info = await GetFileName(Language, Rows, true);
 			if (Info?.FileName is null)
 				return false;
 
@@ -304,7 +342,7 @@ namespace TAG.Content.Markdown.OpenAI
 		public async Task<bool> GenerateLaTeX(StringBuilder Output, string[] Rows, string Language, int Indent,
 			MarkdownDocument Document)
 		{
-			GraphInfo Info = await GetFileName(Language, Rows);
+			GraphInfo Info = await GetFileName(Language, Rows, true);
 			if (Info?.FileName is null)
 				return false;
 
@@ -337,7 +375,7 @@ namespace TAG.Content.Markdown.OpenAI
 		/// <returns>Image, if successful, null otherwise.</returns>
 		public async Task<PixelInformation> GenerateImage(string[] Rows, string Language, MarkdownDocument Document)
 		{
-			GraphInfo Info = await GetFileName(Language, Rows);
+			GraphInfo Info = await GetFileName(Language, Rows, true);
 			if (Info?.FileName is null)
 				return null;
 
