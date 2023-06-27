@@ -124,7 +124,7 @@ namespace TAG.Content.Markdown.OpenAI
 
 			string Id = await OpenAIModule.AsyncHtmlOutput.GenerateStub(MarkdownOutputType.Html, Output, Title);
 
-			Document.QueueAsyncTask(async () =>
+			Document.QueueAsyncTask(async (_) =>
 			{
 				Output = new StringBuilder();
 
@@ -140,7 +140,7 @@ namespace TAG.Content.Markdown.OpenAI
 				}
 
 				await OpenAIModule.AsyncHtmlOutput.ReportResult(MarkdownOutputType.Html, Id, Output.ToString());
-			});
+			}, null);
 
 			return true;
 		}
