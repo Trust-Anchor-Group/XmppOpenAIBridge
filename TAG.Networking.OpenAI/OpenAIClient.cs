@@ -4,7 +4,6 @@ using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using TAG.Networking.OpenAI.Files;
 using TAG.Networking.OpenAI.Messages;
@@ -60,7 +59,7 @@ namespace TAG.Networking.OpenAI
 		/// <param name="ApiKey">API Key</param>
 		/// <param name="Sniffers">Optional sniffers</param>
 		public OpenAIClient(string ApiKey, params ISniffer[] Sniffers)
-			: this("gpt-3.5-turbo", ApiKey, Sniffers)
+			: this("gpt-4", ApiKey, Sniffers)
 		{
 		}
 

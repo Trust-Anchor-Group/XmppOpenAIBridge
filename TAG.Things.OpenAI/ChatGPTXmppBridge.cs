@@ -105,10 +105,10 @@ namespace TAG.Things.OpenAI
 								Session = new ChatHistory(e.FromBareJID);
 								sessions[e.FromBareJID] = Session;
 
-								Session.Add(new SystemMessage(this.Instructions), 2000);
+								Session.Add(new SystemMessage(this.Instructions), 4000);
 							}
 
-							Session.Add(new UserMessage(e.Body), 2000);
+							Session.Add(new UserMessage(e.Body), 4000);
 
 							string MessageId = Guid.NewGuid().ToString();
 							bool First = true;
@@ -163,7 +163,7 @@ namespace TAG.Things.OpenAI
 								e.From, Xml.ToString(), string.Empty, string.Empty, string.Empty, string.Empty,
 								string.Empty, null, null);
 
-							Session.Add(Response2, 2000);
+							Session.Add(Response2, 4000);
 						}
 					}
 				}
