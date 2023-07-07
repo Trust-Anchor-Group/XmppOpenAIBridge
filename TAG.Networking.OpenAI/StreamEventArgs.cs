@@ -25,7 +25,7 @@ namespace TAG.Networking.OpenAI
 		public StreamEventArgs(string Total, string Diff, bool Finished, object State)
 		{
 			this.Total = Total;
-			this.Diff = Diff;
+			this.Diff = Diff ?? string.Empty;
 			this.State = State;
 			this.Finished = Finished;
 		}
