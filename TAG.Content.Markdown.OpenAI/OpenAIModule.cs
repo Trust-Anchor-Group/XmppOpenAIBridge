@@ -147,10 +147,14 @@ namespace TAG.Content.Markdown.OpenAI
 
 			if (Reschedule)
 			{
+				DateTime TP;
+
 				lock (rnd)
 				{
-					Gateway.ScheduleEvent(DeleteOldFiles, DateTime.Now.AddDays(rnd.NextDouble() * 2), MaxAge);
+					TP = DateTime.Now.AddDays(rnd.NextDouble() * 2);
 				}
+
+				Gateway.ScheduleEvent(DeleteOldFiles, TP, MaxAge);
 			}
 		}
 
