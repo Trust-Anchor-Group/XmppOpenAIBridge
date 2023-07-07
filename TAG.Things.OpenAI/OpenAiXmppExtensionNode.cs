@@ -127,7 +127,7 @@ namespace TAG.Things.OpenAI
 			List<ICommand> Result = new List<ICommand>();
 
 			Result.AddRange(await base.Commands);
-			Result.Add(new ReportUse(this));
+			Result.Add(new ReportStatistics(this));
 
 			return Result;
 		}

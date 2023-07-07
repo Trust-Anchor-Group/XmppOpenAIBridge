@@ -8,13 +8,15 @@ using Waher.Runtime.Language;
 using Waher.Things;
 using Waher.Things.Queries;
 using Waher.Runtime.Counters.CounterObjects;
+using System.Linq;
+using Waher.Script.Functions.Vectors;
 
 namespace TAG.Things.OpenAI
 {
 	/// <summary>
 	/// Generates a report of communication usage.
 	/// </summary>
-	public class ReportUse : ICommand
+	public class ReportStatistics : ICommand
 	{
 		private readonly OpenAiXmppExtensionNode node;
 
@@ -22,7 +24,7 @@ namespace TAG.Things.OpenAI
 		/// Generates a report of communication usage.
 		/// </summary>
 		/// <param name="Node">Node performing the report.</param>
-		public ReportUse(OpenAiXmppExtensionNode Node)
+		public ReportStatistics(OpenAiXmppExtensionNode Node)
 		{
 			this.node = Node;
 		}
@@ -53,7 +55,7 @@ namespace TAG.Things.OpenAI
 		/// <param name="Language">Language to use.</param>
 		public Task<string> GetNameAsync(Language Language)
 		{
-			return Language.GetStringAsync(typeof(ReportUse), 10, "Use...");
+			return Language.GetStringAsync(typeof(ReportStatistics), 10, "Statistics...");
 		}
 
 		/// <summary>
@@ -99,7 +101,7 @@ namespace TAG.Things.OpenAI
 		/// <returns>Copy of command object.</returns>
 		public ICommand Copy()
 		{
-			return new ReportUse(this.node);
+			return new ReportStatistics(this.node);
 		}
 
 		/// <summary>
@@ -126,7 +128,7 @@ namespace TAG.Things.OpenAI
 			try
 			{
 				await Query.Start();
-				await Query.SetTitle(await Language.GetStringAsync(typeof(ReportUse), 11, "OpenAI Communication Statistics"));
+				await Query.SetTitle(await Language.GetStringAsync(typeof(ReportStatistics), 11, "OpenAI Communication Statistics") + " - " + this.node.NodeId);
 
 				Dictionary<string, long> Rx = new Dictionary<string, long>();
 				Dictionary<string, long> Tx = new Dictionary<string, long>();
@@ -141,7 +143,7 @@ namespace TAG.Things.OpenAI
 					if (!s.StartsWith(this.node.NodeId + "."))
 						continue;
 
-					s = s.Substring(this.node.NodeId.Length + 1);
+					s = s.Substring(this.node.NodeId.Length);
 
 					if (s.EndsWith(".Rx"))
 						Counters = Rx;
@@ -150,38 +152,47 @@ namespace TAG.Things.OpenAI
 					else
 						continue;
 
-					s = s.Substring(0, s.Length - 3);
+					s = s.Substring(0, s.Length - 2);
 
+					if (s.Length == 1)
+						s = string.Empty;
+					else
+						s = s.Substring(1, s.Length - 2);
+					
 					if (!string.IsNullOrEmpty(s))
 						Users[s] = true;
 
 					Counters[s] = Counter.Counter;
 				}
 
-				string Header = await Language.GetStringAsync(typeof(ReportUse), 12, "Total nmumber of characters");
+				string Header = await Language.GetStringAsync(typeof(ReportStatistics), 12, "Total number of characters");
 				await Query.BeginSection(Header);
 				await Query.NewTable("Total", Header, new Column[]
 				{
-					new Column("Direction", await Language.GetStringAsync(typeof(ReportUse), 13, "Direction"),
+					new Column("Direction", await Language.GetStringAsync(typeof(ReportStatistics), 13, "Direction"),
 						null, null, null, null, ColumnAlignment.Left, null),
-					new Column("Characters", await Language.GetStringAsync(typeof(ReportUse), 14, "#Characters"),
+					new Column("Characters", await Language.GetStringAsync(typeof(ReportStatistics), 14, "#Characters"),
 						null, null, null, null, ColumnAlignment.Right, null)
 				});
 
 				if (Rx.TryGetValue(string.Empty, out long Count))
 				{
+					Rx.Remove(string.Empty);
+
 					await Query.NewRecords("Total", new Record(new object[]
 					{
-						await Language.GetStringAsync(typeof(ReportUse), 15, "Received from users, sent to OpenAI"),
+						await Language.GetStringAsync(typeof(ReportStatistics), 15, "Received from users, sent to OpenAI"),
 						Count
 					}));
 				}
 
 				if (Tx.TryGetValue(string.Empty, out Count))
 				{
+					Tx.Remove(string.Empty);
+
 					await Query.NewRecords("Total", new Record(new object[]
 					{
-						await Language.GetStringAsync(typeof(ReportUse), 16, "Received from OpenAI, returned to users"),
+						await Language.GetStringAsync(typeof(ReportStatistics), 16, "Received from OpenAI, returned to users"),
 						Count
 					}));
 				}
@@ -189,15 +200,15 @@ namespace TAG.Things.OpenAI
 				await Query.TableDone("Total");
 				await Query.EndSection();
 
-				Header = await Language.GetStringAsync(typeof(ReportUse), 17, "Number of characters per user");
+				Header = await Language.GetStringAsync(typeof(ReportStatistics), 17, "Number of characters per user");
 				await Query.BeginSection(Header);
 				await Query.NewTable("PerUser", Header, new Column[]
 				{
-					new Column("User", await Language.GetStringAsync(typeof(ReportUse), 18, "User"),
+					new Column("User", await Language.GetStringAsync(typeof(ReportStatistics), 18, "User"),
 						null, null, null, null, ColumnAlignment.Left, null),
-					new Column("Rx", await Language.GetStringAsync(typeof(ReportUse), 19, "From User"),
+					new Column("Rx", await Language.GetStringAsync(typeof(ReportStatistics), 19, "From User"),
 						null, null, null, null, ColumnAlignment.Right, null),
-					new Column("Tx", await Language.GetStringAsync(typeof(ReportUse), 20, "To User"),
+					new Column("Tx", await Language.GetStringAsync(typeof(ReportStatistics), 20, "To User"),
 						null, null, null, null, ColumnAlignment.Right, null)
 				});
 
@@ -205,10 +216,14 @@ namespace TAG.Things.OpenAI
 
 				foreach (KeyValuePair<string, bool> P in Users)
 				{
-					if (!Rx.TryGetValue(P.Key, out long RxCount))
+					if (Rx.TryGetValue(P.Key, out long RxCount))
+						Rx.Remove(P.Key);
+					else
 						RxCount = 0;
 
-					if (!Tx.TryGetValue(P.Key, out long TxCount))
+					if (Tx.TryGetValue(P.Key, out long TxCount))
+						Tx.Remove(P.Key);
+					else
 						TxCount = 0;
 
 					Records.Add(new Record(new object[]
@@ -216,6 +231,26 @@ namespace TAG.Things.OpenAI
 						P.Key,
 						RxCount,
 						TxCount
+					}));
+				}
+
+				foreach (KeyValuePair<string, long> P in Rx)
+				{
+					Records.Add(new Record(new object[]
+					{
+						P.Key,
+						P.Value,
+						null
+					}));
+				}
+
+				foreach (KeyValuePair<string, long> P in Tx)
+				{
+					Records.Add(new Record(new object[]
+					{
+						P.Key,
+						null,
+						P.Value
 					}));
 				}
 

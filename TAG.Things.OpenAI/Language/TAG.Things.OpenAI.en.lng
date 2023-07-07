@@ -11,9 +11,9 @@
 			<String id="7">DALL-E-XMPP Bridge</String>
 			<String id="8">Image Size:</String>
 			<String id="9">Images generated will have this size.</String>
-			<String id="10">Use...</String>
+			<String id="10">Statistics...</String>
 			<String id="11">OpenAI Communication Statistics</String>
-			<String id="12">Total nmumber of characters</String>
+			<String id="12">Total number of characters</String>
 			<String id="13">Direction</String>
 			<String id="14">#Characters</String>
 			<String id="15">Received from users, sent to OpenAI</String>
