@@ -7,6 +7,7 @@ using Waher.Content;
 using Waher.Networking.Sniffers;
 using Waher.Networking.XMPP;
 using Waher.Runtime.Inventory;
+using Waher.Things;
 using Waher.Things.Attributes;
 using Waher.Things.Xmpp;
 
@@ -114,6 +115,21 @@ namespace TAG.Things.OpenAI
 		public override bool IsRegisteredExtension(XmppClient Client)
 		{
 			return this.clients.Contains(Client);
+		}
+
+		/// <summary>
+		/// Available command objects. If no commands are available, null is returned.
+		/// </summary>
+		public override Task<IEnumerable<ICommand>> Commands => this.GetCommands();
+
+		public async Task<IEnumerable<ICommand>> GetCommands()
+		{
+			List<ICommand> Result = new List<ICommand>();
+
+			Result.AddRange(await base.Commands);
+			Result.Add(new ReportUse(this));
+
+			return Result;
 		}
 	}
 }

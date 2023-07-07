@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using TAG.Networking.OpenAI;
@@ -8,8 +9,10 @@ using Waher.Networking.XMPP;
 using Waher.Persistence;
 using Waher.Runtime.Cache;
 using Waher.Runtime.Language;
-using Waher.Script.Functions.Strings;
+using Waher.Things;
 using Waher.Things.Attributes;
+using DP = Waher.Things.DisplayableParameters;
+using Waher.Runtime.Counters;
 
 namespace TAG.Things.OpenAI
 {
@@ -48,6 +51,22 @@ namespace TAG.Things.OpenAI
 		}
 
 		/// <summary>
+		/// Gets displayable parameters.
+		/// </summary>
+		/// <param name="Language">Language to use.</param>
+		/// <param name="Caller">Information about caller.</param>
+		/// <returns>Set of displayable parameters.</returns>
+		public override async Task<IEnumerable<DP.Parameter>> GetDisplayableParametersAsync(Language Language, RequestOrigin Caller)
+		{
+			LinkedList<DP.Parameter> Result = await base.GetDisplayableParametersAsync(Language, Caller) as LinkedList<DP.Parameter>;
+
+			Result.AddLast(new DP.Int64Parameter("Rx", "Received", await RuntimeCounters.GetCount(this.NodeId + ".Rx")));
+			Result.AddLast(new DP.Int64Parameter("Tx", "Sent", await RuntimeCounters.GetCount(this.NodeId + ".Tx")));
+
+			return Result;
+		}
+
+		/// <summary>
 		/// Registers the extension with an XMPP Client.
 		/// </summary>
 		/// <param name="Client">XMPP Client</param>
@@ -56,7 +75,7 @@ namespace TAG.Things.OpenAI
 			Client.RegisterFeature("http://jabber.org/protocol/chatstates");
 
 			Client.OnChatMessage += this.Client_OnChatMessage;
-			
+
 			return base.RegisterExtension(Client);
 		}
 
@@ -94,6 +113,9 @@ namespace TAG.Things.OpenAI
 			{
 				try
 				{
+					await RuntimeCounters.IncrementCounter(this.NodeId + ".Rx", Text.Length);
+					await RuntimeCounters.IncrementCounter(this.NodeId + "." + e.FromBareJID.ToLower() + ".Rx", Text.Length);
+
 					using (OpenAIClient Client = new OpenAIClient(this.ApiKey, this.Sniffers))
 					{
 						Text = await ConvertTextIfSpeech(Client, Text);
@@ -118,6 +140,9 @@ namespace TAG.Things.OpenAI
 							Message Response2 = await Client.ChatGPT(Session.User.LowerCase, Session.Messages,
 								async (Sender2, e2) =>
 								{
+									await RuntimeCounters.IncrementCounter(this.NodeId + ".Tx", e2.Diff.Length);
+									await RuntimeCounters.IncrementCounter(this.NodeId + "." + e.FromBareJID.ToLower() + ".Tx", e2.Diff.Length);
+
 									DateTime Now = DateTime.Now;
 									if (Now.Subtract(Last).TotalSeconds < 1)
 										return;
@@ -143,7 +168,7 @@ namespace TAG.Things.OpenAI
 									Xml.Append(await Gateway.GetMultiFormatChatMessageXml(Markdown, true, true));
 
 									XmppClient.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, MessageId,
-										e.From, Xml.ToString(), string.Empty, string.Empty, string.Empty, string.Empty, 
+										e.From, Xml.ToString(), string.Empty, string.Empty, string.Empty, string.Empty,
 										string.Empty, null, null);
 								}, null);
 

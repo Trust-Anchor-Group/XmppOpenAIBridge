@@ -7,13 +7,16 @@ using TAG.Networking.OpenAI;
 using Waher.Content;
 using Waher.Content.Html.Elements;
 using Waher.Content.Markdown;
+using Waher.Content.Xml;
 using Waher.IoTGateway;
 using Waher.Networking.XMPP;
+using Waher.Runtime.Counters;
 using Waher.Runtime.Language;
 using Waher.Runtime.Temporary;
 using Waher.Security;
+using Waher.Things;
 using Waher.Things.Attributes;
-using Waher.Content.Xml;
+using DP = Waher.Things.DisplayableParameters;
 
 namespace TAG.Things.OpenAI
 {
@@ -49,6 +52,22 @@ namespace TAG.Things.OpenAI
 		public override Task<string> GetTypeNameAsync(Language Language)
 		{
 			return Language.GetStringAsync(typeof(OpenAiXmppExtensionNode), 7, "DALL-E-XMPP Bridge");
+		}
+
+		/// <summary>
+		/// Gets displayable parameters.
+		/// </summary>
+		/// <param name="Language">Language to use.</param>
+		/// <param name="Caller">Information about caller.</param>
+		/// <returns>Set of displayable parameters.</returns>
+		public override async Task<IEnumerable<DP.Parameter>> GetDisplayableParametersAsync(Language Language, RequestOrigin Caller)
+		{
+			LinkedList<DP.Parameter> Result = await base.GetDisplayableParametersAsync(Language, Caller) as LinkedList<DP.Parameter>;
+
+			Result.AddLast(new DP.Int64Parameter("Rx", "Received", await RuntimeCounters.GetCount(this.NodeId + ".Rx")));
+			Result.AddLast(new DP.Int64Parameter("Tx", "Sent", await RuntimeCounters.GetCount(this.NodeId + ".Tx")));
+
+			return Result;
 		}
 
 		/// <summary>
@@ -113,6 +132,9 @@ namespace TAG.Things.OpenAI
 
 						if (!File.Exists(FileName))
 						{
+							await RuntimeCounters.IncrementCounter(this.NodeId + ".Rx", Text.Length);
+							await RuntimeCounters.IncrementCounter(this.NodeId + "." + e.FromBareJID.ToLower() + ".Rx", Text.Length);
+
 							Uri ImageUri = await Client.CreateImage(Text, this.ImageSize, e.FromBareJID.ToLower());
 							KeyValuePair<string, TemporaryStream> P = await InternetContent.GetTempStreamAsync(ImageUri);
 
@@ -125,6 +147,9 @@ namespace TAG.Things.OpenAI
 								await f.ReadAsync(Bin, 0, c);
 
 								await Resources.WriteAllBytesAsync(FileName, Bin);
+
+								await RuntimeCounters.IncrementCounter(this.NodeId + ".Tx", c);
+								await RuntimeCounters.IncrementCounter(this.NodeId + "." + e.FromBareJID.ToLower() + ".Tx", c);
 							}
 						}
 
