@@ -10,8 +10,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.3" />
-    <PackageReference Include="MSTest.TestAdapter" Version="3.0.4" />
-    <PackageReference Include="MSTest.TestFramework" Version="3.0.4" />
+    <PackageReference Include="MSTest.TestAdapter" Version="3.1.1" />
+    <PackageReference Include="MSTest.TestFramework" Version="3.1.1" />
     <PackageReference Include="coverlet.collector" Version="6.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -20,7 +20,7 @@
     <PackageReference Include="Waher.Events.Console" Version="1.1.1" />
     <PackageReference Include="Waher.Persistence" Version="1.9.1" />
     <PackageReference Include="Waher.Persistence.Files" Version="1.10.4" />
-    <PackageReference Include="Waher.Runtime.Inventory" Version="1.1.4" />
+    <PackageReference Include="Waher.Runtime.Inventory" Version="1.1.5" />
     <PackageReference Include="Waher.Runtime.Inventory.Loader" Version="1.0.9" />
     <PackageReference Include="Waher.Runtime.Settings" Version="1.0.10" />
   </ItemGroup>
