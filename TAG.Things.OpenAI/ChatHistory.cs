@@ -15,10 +15,12 @@ namespace TAG.Things.OpenAI
 		/// Contains information about the chat history, for a specific user.
 		/// </summary>
 		/// <param name="BareJID">Bare JID of user.</param>
-		public ChatHistory(string BareJID)
+		/// <param name="Instructions">Original instructions for session.</param>
+		public ChatHistory(string BareJID, string Instructions)
 		{
 			this.Messages = new LinkedList<Message>();
 			this.User = BareJID;
+			this.Instructions = Instructions;
 			this.nrCharacters = 0;
 		}
 
@@ -31,6 +33,11 @@ namespace TAG.Things.OpenAI
 		/// List of messages.
 		/// </summary>
 		public LinkedList<Message> Messages { get; }
+
+		/// <summary>
+		/// Original instructions for session.
+		/// </summary>
+		public string Instructions { get; }
 
 		/// <summary>
 		/// Adds a message to the chat history.

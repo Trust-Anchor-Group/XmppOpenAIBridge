@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Waher.Script;
 using Waher.Script.Abstraction.Elements;
 using Waher.Script.Model;
 using Waher.Script.Objects;
 using Waher.Things;
+using Waher.Things.Metering;
 
 namespace TAG.Things.OpenAI.ScriptExtensions
 {
@@ -56,7 +54,7 @@ namespace TAG.Things.OpenAI.ScriptExtensions
 		/// <returns>Result.</returns>
 		public override async Task<IElement> EvaluateAsync(Variables Variables)
 		{
-			if (!Waher.IoTGateway.ScriptExtensions.Functions.GetNode.TryGetDataSource("MeteringTopology", out IDataSource Source))
+			if (!Waher.IoTGateway.ScriptExtensions.Functions.GetNode.TryGetDataSource(MeteringTopology.SourceID, out IDataSource Source))
 				return BooleanValue.False;
 
 			INode Node = await Source.GetNodeAsync(new ThingReference("ChatGPT"));

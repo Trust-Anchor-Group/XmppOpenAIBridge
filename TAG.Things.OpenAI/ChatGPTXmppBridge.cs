@@ -113,83 +113,63 @@ namespace TAG.Things.OpenAI
 			{
 				try
 				{
-					await RuntimeCounters.IncrementCounter(this.NodeId + ".Rx", Text.Length);
-					await RuntimeCounters.IncrementCounter(this.NodeId + "." + e.FromBareJID.ToLower() + ".Rx", Text.Length);
+					string MessageId = Guid.NewGuid().ToString();
+					bool First = true;
+					StringBuilder Xml = new StringBuilder();
+					DateTime Last = DateTime.MinValue;
 
-					using (OpenAIClient Client = new OpenAIClient(this.ApiKey, this.Sniffers))
-					{
-						Text = await ConvertTextIfSpeech(Client, Text);
-
-						if (!string.IsNullOrEmpty(Text))
+					Message Response2 = await this.ChatQueryWithHistory(e.FromBareJID, Text, false,
+						async (Sender2, e2) =>
 						{
-							if (!sessions.TryGetValue(e.FromBareJID, out ChatHistory Session))
-							{
-								Session = new ChatHistory(e.FromBareJID);
-								sessions[e.FromBareJID] = Session;
+							await RuntimeCounters.IncrementCounter(this.NodeId + ".Tx", e2.Diff.Length);
+							await RuntimeCounters.IncrementCounter(this.NodeId + "." + e.FromBareJID.ToLower() + ".Tx", e2.Diff.Length);
 
-								Session.Add(new SystemMessage(this.Instructions), 4000);
-							}
+							DateTime Now = DateTime.Now;
+							if (Now.Subtract(Last).TotalSeconds < 1)
+								return;
 
-							Session.Add(new UserMessage(e.Body), 4000);
-
-							string MessageId = Guid.NewGuid().ToString();
-							bool First = true;
-							StringBuilder Xml = new StringBuilder();
-							DateTime Last = DateTime.MinValue;
-
-							Message Response2 = await Client.ChatGPT(Session.User.LowerCase, Session.Messages,
-								async (Sender2, e2) =>
-								{
-									await RuntimeCounters.IncrementCounter(this.NodeId + ".Tx", e2.Diff.Length);
-									await RuntimeCounters.IncrementCounter(this.NodeId + "." + e.FromBareJID.ToLower() + ".Tx", e2.Diff.Length);
-
-									DateTime Now = DateTime.Now;
-									if (Now.Subtract(Last).TotalSeconds < 1)
-										return;
-
-									Last = Now;
-									Xml.Clear();
-
-									if (First)
-										First = false;
-									else
-									{
-										Xml.Append("<replace id='");
-										Xml.Append(MessageId);
-										Xml.Append("' xmlns='urn:xmpp:message-correct:0'/>");
-									}
-
-									if (e2.Finished)
-										Xml.Append("<active xmlns='http://jabber.org/protocol/chatstates'/>");
-									else
-										Xml.Append("<composing xmlns='http://jabber.org/protocol/chatstates'/>");
-
-									string Markdown = string.IsNullOrEmpty(e2.Total) ? "⧖" : e2.Total;
-									Xml.Append(await Gateway.GetMultiFormatChatMessageXml(Markdown, true, true));
-
-									XmppClient.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, MessageId,
-										e.From, Xml.ToString(), string.Empty, string.Empty, string.Empty, string.Empty,
-										string.Empty, null, null);
-								}, null);
-
+							Last = Now;
 							Xml.Clear();
 
-							if (!First)
+							if (First)
+								First = false;
+							else
 							{
 								Xml.Append("<replace id='");
 								Xml.Append(MessageId);
 								Xml.Append("' xmlns='urn:xmpp:message-correct:0'/>");
 							}
 
-							Xml.Append("<active xmlns='http://jabber.org/protocol/chatstates'/>");
-							Xml.Append(await Gateway.GetMultiFormatChatMessageXml(Response2.Content, true, true));
+							if (e2.Finished)
+								Xml.Append("<active xmlns='http://jabber.org/protocol/chatstates'/>");
+							else
+								Xml.Append("<composing xmlns='http://jabber.org/protocol/chatstates'/>");
+
+							string Markdown = string.IsNullOrEmpty(e2.Total) ? "⧖" : e2.Total;
+							Xml.Append(await Gateway.GetMultiFormatChatMessageXml(Markdown, true, true));
 
 							XmppClient.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, MessageId,
 								e.From, Xml.ToString(), string.Empty, string.Empty, string.Empty, string.Empty,
 								string.Empty, null, null);
+						}, null);
 
-							Session.Add(Response2, 4000);
+					if (!(Response2 is null))
+					{
+						Xml.Clear();
+
+						if (!First)
+						{
+							Xml.Append("<replace id='");
+							Xml.Append(MessageId);
+							Xml.Append("' xmlns='urn:xmpp:message-correct:0'/>");
 						}
+
+						Xml.Append("<active xmlns='http://jabber.org/protocol/chatstates'/>");
+						Xml.Append(await Gateway.GetMultiFormatChatMessageXml(Response2.Content, true, true));
+
+						XmppClient.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, MessageId,
+							e.From, Xml.ToString(), string.Empty, string.Empty, string.Empty, string.Empty,
+							string.Empty, null, null);
 					}
 				}
 				catch (Exception ex)
@@ -202,11 +182,71 @@ namespace TAG.Things.OpenAI
 		}
 
 		/// <summary>
-		/// Gets generated text from a conversation.
+		/// Performs a chat completion query, maintaining a session history.
+		/// </summary>
+		/// <param name="From">Sender of query.</param>
+		/// <param name="Text">Text to send.</param>
+		/// <param name="ClearSession">If session should be restarted or not.</param>
+		/// <param name="IntermediateResponseCallback">Callback method for intermediate callbacks.</param>
+		/// <param name="State">State object to pass on to callback method.</param>
+		/// <returns>Response from OpenAI. Can be null, if text send is empty, or does not include text.</returns>
+		public Task<Message> ChatQueryWithHistory(string From, string Text, bool ClearSession, 
+			StreamEventHandler IntermediateResponseCallback, object State)
+		{
+			return this.ChatQueryWithHistory(From, Text, this.Instructions, ClearSession, IntermediateResponseCallback, State);
+		}
+
+		/// <summary>
+		/// Performs a chat completion query, maintaining a session history.
+		/// </summary>
+		/// <param name="From">Sender of query.</param>
+		/// <param name="Text">Text to send.</param>
+		/// <param name="Instructions">Instructions for session.</param>
+		/// <param name="ClearSession">If session should be restarted or not.</param>
+		/// <param name="IntermediateResponseCallback">Callback method for intermediate callbacks.</param>
+		/// <param name="State">State object to pass on to callback method.</param>
+		/// <returns>Response from OpenAI. Can be null, if text send is empty, or does not include text.</returns>
+		public async Task<Message> ChatQueryWithHistory(string From, string Text, string Instructions, bool ClearSession,
+			StreamEventHandler IntermediateResponseCallback, object State)
+		{
+			await RuntimeCounters.IncrementCounter(this.NodeId + ".Rx", Text.Length);
+			await RuntimeCounters.IncrementCounter(this.NodeId + "." + From.ToLower() + ".Rx", Text.Length);
+
+			using (OpenAIClient Client = new OpenAIClient(this.ApiKey, this.Sniffers))
+			{
+				Text = await ConvertTextIfSpeech(Client, Text);
+
+				if (!string.IsNullOrEmpty(Text))
+				{
+					if (!sessions.TryGetValue(From, out ChatHistory Session) || 
+						Session.Instructions != Instructions)
+					{
+						Session = new ChatHistory(From, Instructions);
+						sessions[From] = Session;
+
+						Session.Add(new SystemMessage(Instructions), 4000);
+					}
+
+					Session.Add(new UserMessage(Text), 4000);
+
+					Message Response2 = await Client.ChatGPT(Session.User.LowerCase, Session.Messages,
+						IntermediateResponseCallback, State);
+
+					Session.Add(Response2, 4000);
+
+					return Response2;
+				}
+				else
+					return null;
+			}
+		}
+
+		/// <summary>
+		/// Gets generated text from a conversation. No intermediate session history is provided.
 		/// </summary>
 		/// <param name="Messages">Conversation</param>
 		/// <returns>Generated message</returns>
-		public async Task<Message> GetText(params Message[] Messages)
+		public async Task<Message> ChatCompletionNoHistory(params Message[] Messages)
 		{
 			using (OpenAIClient Client = new OpenAIClient(this.ApiKey, this.Sniffers))
 			{
@@ -215,13 +255,13 @@ namespace TAG.Things.OpenAI
 		}
 
 		/// <summary>
-		/// Gets generated text from a text.
+		/// Gets generated text from a text. No intermediate session history is provided.
 		/// </summary>
 		/// <param name="Messages">Textual message description</param>
 		/// <returns>Generated message</returns>
-		public async Task<string> GetText(string Message)
+		public async Task<string> ChatCompletionNoHistory(string Message)
 		{
-			Message Result = await this.GetText(new UserMessage(Message));
+			Message Result = await this.ChatCompletionNoHistory(new UserMessage(Message));
 			return Result.Content;
 		}
 	}

@@ -187,7 +187,7 @@ namespace TAG.Content.Markdown.OpenAI
 
 			try
 			{
-				Text = await ChatGptBridge.GetText(Description);
+				Text = await ChatGptBridge.ChatCompletionNoHistory(Description);
 
 				await Resources.WriteAllTextAsync(FileName, Text, Encoding.UTF8);
 			}
