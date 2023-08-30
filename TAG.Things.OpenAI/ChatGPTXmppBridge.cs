@@ -219,7 +219,8 @@ namespace TAG.Things.OpenAI
 				if (!string.IsNullOrEmpty(Text))
 				{
 					if (!sessions.TryGetValue(From, out ChatHistory Session) || 
-						Session.Instructions != Instructions)
+						Session.Instructions != Instructions ||
+						ClearSession)
 					{
 						Session = new ChatHistory(From, Instructions);
 						sessions[From] = Session;

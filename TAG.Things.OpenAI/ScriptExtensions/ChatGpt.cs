@@ -31,7 +31,7 @@ namespace TAG.Things.OpenAI.ScriptExtensions
 		/// <summary>
 		/// Name of the function
 		/// </summary>
-		public override string FunctionName => throw new System.NotImplementedException();
+		public override string FunctionName => nameof(ChatGpt);
 
 		/// <summary>
 		/// Default argument names.
@@ -68,9 +68,8 @@ namespace TAG.Things.OpenAI.ScriptExtensions
 			if (!Waher.IoTGateway.ScriptExtensions.Functions.GetNode.TryGetDataSource(MeteringTopology.SourceID, out IDataSource Source))
 				throw new ScriptRuntimeException(MeteringTopology.SourceID + " data source not found.", this);
 
-			INode Node = await Source.GetNodeAsync(new ThingReference("ChatGPT"));
-			if (Node is null)
-				throw new ScriptRuntimeException("ChatGPT node not found in data source " + MeteringTopology.SourceID + ".", this);
+			INode Node = await Source.GetNodeAsync(new ThingReference("ChatGPT", MeteringTopology.SourceID))
+				?? throw new ScriptRuntimeException("ChatGPT node not found in data source " + MeteringTopology.SourceID + ".", this);
 
 			if (!(Node is ChatGPTXmppBridge ChatGpt))
 				throw new ScriptRuntimeException("ChatGPT node not of expected type.", this);
@@ -84,7 +83,7 @@ namespace TAG.Things.OpenAI.ScriptExtensions
 			bool History = If.ToBoolean(Arguments[3]) ?? throw new ScriptRuntimeException("Expected Boolean History argument (4th)", this);
 			bool Preview = If.ToBoolean(Arguments[4]) ?? throw new ScriptRuntimeException("Expected Boolean Preview argument (5th)", this);
 
-			Message Response = await ChatGpt.ChatQueryWithHistory(Sender, Text, Instruction, History, (sender, e) =>
+			Message Response = await ChatGpt.ChatQueryWithHistory(Sender, Text, Instruction, !History, (sender, e) =>
 			{
 				if (Preview && Variables.HandlesPreview)
 					Variables.Preview(this.Expression, new StringValue(e.Total));

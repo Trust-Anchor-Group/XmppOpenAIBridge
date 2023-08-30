@@ -57,7 +57,7 @@ namespace TAG.Things.OpenAI.ScriptExtensions
 			if (!Waher.IoTGateway.ScriptExtensions.Functions.GetNode.TryGetDataSource(MeteringTopology.SourceID, out IDataSource Source))
 				return BooleanValue.False;
 
-			INode Node = await Source.GetNodeAsync(new ThingReference("ChatGPT"));
+			INode Node = await Source.GetNodeAsync(new ThingReference("ChatGPT", MeteringTopology.SourceID));
 			if (Node is null)
 				return BooleanValue.False;
 
