@@ -1,4 +1,6 @@
-﻿namespace TAG.Networking.OpenAI.Messages
+﻿using System.Collections.Generic;
+
+namespace TAG.Networking.OpenAI.Messages
 {
 	/// <summary>
 	/// OpenAI assistant message.
@@ -9,8 +11,11 @@
 		/// OpenAI assistant message.
 		/// </summary>
 		/// <param name="Content">Content of message.</param>
-		public AssistantMessage(string Content)
-			: base(Content)
+		/// <param name="FunctionName">Function name, if calling a function.</param>
+		/// <param name="FunctionArguments">Function arguments, if calling a function.</param>
+		public AssistantMessage(string Content, string FunctionName, 
+			Dictionary<string,object> FunctionArguments)
+			: base(Content, FunctionName, FunctionArguments)
 		{
 		}
 

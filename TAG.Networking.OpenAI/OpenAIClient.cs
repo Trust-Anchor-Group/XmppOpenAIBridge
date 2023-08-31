@@ -6,6 +6,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using TAG.Networking.OpenAI.Files;
+using TAG.Networking.OpenAI.Functions;
 using TAG.Networking.OpenAI.Messages;
 using Waher.Content;
 using Waher.Content.Getters;
@@ -122,7 +123,7 @@ namespace TAG.Networking.OpenAI
 		/// if exceeding limits, or if something unexpected happened.</exception>
 		public Task<Message> ChatGPT(string User, IEnumerable<Message> Messages)
 		{
-			return this.ChatGPT(User, Messages, null, null);
+			return this.ChatGPT(User, Messages, null, null, null);
 		}
 
 		/// <summary>
@@ -131,10 +132,47 @@ namespace TAG.Networking.OpenAI
 		/// </summary>
 		/// <param name="User">User performing the action.</param>
 		/// <param name="Messages">Messages in conversation.</param>
+		/// <param name="StreamCallback">Stream callback for intermediate responses.</param>
+		/// <param name="State">State object to pass on to callback method.</param>
 		/// <returns>Message response.</returns>
 		/// <exception cref="Exception">If unable to communicate with API, 
 		/// if exceeding limits, or if something unexpected happened.</exception>
-		public async Task<Message> ChatGPT(string User, IEnumerable<Message> Messages, StreamEventHandler StreamCallback, object State)
+		public Task<Message> ChatGPT(string User, IEnumerable<Message> Messages,
+			StreamEventHandler StreamCallback, object State)
+		{
+			return this.ChatGPT(User, Messages, null, StreamCallback, State);
+		}
+
+		/// <summary>
+		/// Performs a request to OpenAI ChatGPT turbo 3.5, and returns the textual
+		/// response.
+		/// </summary>
+		/// <param name="User">User performing the action.</param>
+		/// <param name="Messages">Messages in conversation.</param>
+		/// <param name="Functions">Functions</param>
+		/// <returns>Message response.</returns>
+		/// <exception cref="Exception">If unable to communicate with API, 
+		/// if exceeding limits, or if something unexpected happened.</exception>
+		public Task<Message> ChatGPT(string User, IEnumerable<Message> Messages,
+			IEnumerable<Function> Functions)
+		{
+			return this.ChatGPT(User, Messages, Functions, null, null);
+		}
+
+		/// <summary>
+		/// Performs a request to OpenAI ChatGPT turbo 3.5, and returns the textual
+		/// response.
+		/// </summary>
+		/// <param name="User">User performing the action.</param>
+		/// <param name="Messages">Messages in conversation.</param>
+		/// <param name="Functions">Functions</param>
+		/// <param name="StreamCallback">Stream callback for intermediate responses.</param>
+		/// <param name="State">State object to pass on to callback method.</param>
+		/// <returns>Message response.</returns>
+		/// <exception cref="Exception">If unable to communicate with API, 
+		/// if exceeding limits, or if something unexpected happened.</exception>
+		public async Task<Message> ChatGPT(string User, IEnumerable<Message> Messages,
+			IEnumerable<Function> Functions, StreamEventHandler StreamCallback, object State)
 		{
 			List<Dictionary<string, object>> Messages2 = new List<Dictionary<string, object>>();
 
@@ -152,6 +190,17 @@ namespace TAG.Networking.OpenAI
 				{ "model", this.model },
 				{ "messages", Messages2.ToArray() },
 			};
+
+			if (!(Functions is null))
+			{
+				List<Dictionary<string, object>> FunctionsArray = new List<Dictionary<string, object>>();
+
+				foreach (Function F in Functions)
+					FunctionsArray.Add(F.ToJson());
+
+				Request["functions"] = FunctionsArray.ToArray();
+				Request["function_call"] = "auto";
+			}
 
 			if (!string.IsNullOrEmpty(User))
 				Request["user"] = User;
@@ -284,10 +333,32 @@ namespace TAG.Networking.OpenAI
 								}
 
 								if (Option.TryGetValue("finish_reason", out Obj) &&
-									Obj is string FinishReason &&
-									FinishReason == "stop")
+									Obj is string FinishReason)
 								{
-									Finished = true;
+									switch (FinishReason)
+									{
+										case "stop":
+											Finished = true;
+											break;
+
+										case "function_call":
+											Finished = true;
+											
+											if (!(Result?.arguments is null))
+											{
+												try
+												{
+													Result.FunctionArguments = (Dictionary<string, object>)JSON.Parse(Result.arguments.ToString());
+												}
+												catch (Exception ex)
+												{
+													Result.FunctionName = null;
+													if (this.HasSniffers)
+														this.Error(ex.Message);
+												}
+											}
+											break;
+									}
 								}
 
 								try

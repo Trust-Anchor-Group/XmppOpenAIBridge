@@ -10,7 +10,7 @@
 		/// </summary>
 		/// <param name="Content">Content of message.</param>
 		public UserMessage(string Content)
-			: base(Content)
+			: base(Content, null, null)
 		{
 		}
 

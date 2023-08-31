@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Text;
 using TAG.Networking.OpenAI.Files;
+using TAG.Networking.OpenAI.Functions;
 using TAG.Networking.OpenAI.Messages;
 using Waher.Content;
 using Waher.Events;
@@ -245,9 +246,9 @@ namespace TAG.Networking.OpenAI.Test
 			bool Finished = false;
 
 			Message Response = await client.ChatGPT("UnitTest",
-				new Message[] 
-				{ 
-					new UserMessage("Can you write a 1000-character poem? If you cannot create a poem, create any text of 1000 characters. It must have at least three paragraphs, with empty rows between paragraphs. Please use Markdown to format the poem so it looks nice. Include a header, some text that is bold, some that is italic and some that is underlined.") 
+				new Message[]
+				{
+					new UserMessage("Can you write a 1000-character poem? If you cannot create a poem, create any text of 1000 characters. It must have at least three paragraphs, with empty rows between paragraphs. Please use Markdown to format the poem so it looks nice. Include a header, some text that is bold, some that is italic and some that is underlined.")
 				},
 				(sender, e) =>
 				{
@@ -265,6 +266,121 @@ namespace TAG.Networking.OpenAI.Test
 			Console.Error.WriteLine(Response.Content);
 
 			Assert.IsTrue(Finished);
+		}
+
+		[TestMethod]
+		public async Task Test_12_ChatGPT_FunctionCall()
+		{
+			Assert.IsNotNull(client);
+
+			Message Response = await client.ChatGPT("UnitTest",
+				new Message[]
+				{
+					new UserMessage("I'm looking for images of Kermit. Can you suggest a representative image?")
+				},
+				new Function[]
+				{
+					new Function("ShowImage", "Displays an image to the user.",
+						new StringParameter("Url", "URL to the image to show.", true),
+						new IntegerParameter("Width","Width of image, in pixels.", false, 0, false, null, false),
+						new IntegerParameter("Height","Height of image, in pixels.", false, 0, false, null, false),
+						new StringParameter("Alt", "Alternative textual description of image, in cases the image cannot be shown.", false)),
+					new Function("ShowImages", "Displays an array of images to the user.",
+						new ArrayParameter("Images", "Array of images to show.", true,
+						new ObjectParameter("Image", "Information about an image.", true,
+						new StringParameter("Url", "URL to the image to show.", true),
+						new IntegerParameter("Width","Width of image, in pixels.", false, 0, false, null, false),
+						new IntegerParameter("Height","Height of image, in pixels.", false, 0, false, null, false),
+						new StringParameter("Alt", "Alternative textual description of image, in cases the image cannot be shown.", false))))
+				});
+
+			Console.Out.WriteLine(Response.Content);
+
+			Assert.IsNotNull(Response.FunctionName);
+			Assert.IsNotNull(Response.FunctionArguments);
+		}
+
+		[TestMethod]
+		public async Task Test_13_ChatGPT_Streaming_FunctionCalls()
+		{
+			Assert.IsNotNull(client);
+
+			bool Finished = false;
+
+			Message Response = await client.ChatGPT("UnitTest",
+				new Message[]
+				{
+					new UserMessage("I'm looking for images of Kermit. Can you suggest four or five representative images? Please only call provided functions, and do not return any text content.")
+				},
+				new Function[]
+				{
+					new Function("ShowImage", "Displays an image to the user.",
+						new StringParameter("Url", "URL to the image to show.", true),
+						new IntegerParameter("Width","Width of image, in pixels.", false, 0, false, null, false),
+						new IntegerParameter("Height","Height of image, in pixels.", false, 0, false, null, false),
+						new StringParameter("Alt", "Alternative textual description of image, in cases the image cannot be shown.", false)),
+					new Function("ShowImages", "Displays an array of images to the user.",
+						new ArrayParameter("Images", "Array of images to show.", true,
+						new ObjectParameter("Image", "Information about an image.", true,
+						new StringParameter("Url", "URL to the image to show.", true),
+						new IntegerParameter("Width","Width of image, in pixels.", false, 0, false, null, false),
+						new IntegerParameter("Height","Height of image, in pixels.", false, 0, false, null, false),
+						new StringParameter("Alt", "Alternative textual description of image, in cases the image cannot be shown.", false))))
+				},
+				(sender, e) =>
+				{
+					Console.Error.Write(e.Diff);
+
+					if (e.Finished)
+						Finished = true;
+
+					return Task.CompletedTask;
+				}, null);
+
+			Console.Error.WriteLine();
+			Console.Error.WriteLine();
+			Console.Error.WriteLine();
+			Console.Error.WriteLine(Response.Content);
+			Console.Error.WriteLine();
+			Console.Error.WriteLine(Response.FunctionName);
+			Console.Error.WriteLine(JSON.Encode(Response.FunctionArguments, true));
+
+			Assert.IsTrue(Finished);
+			Assert.IsNotNull(Response.FunctionName);
+			Assert.IsNotNull(Response.FunctionArguments);
+		}
+
+		[TestMethod]
+		public async Task Test_14_ChatGPT_FunctionCall2()
+		{
+			Assert.IsNotNull(client);
+
+			Message Response = await client.ChatGPT("UnitTest",
+				new Message[]
+				{
+					new UserMessage("Can you draw a graph of the derivative of the function f(x)=x^3+x^2?")
+				},
+				new Function[]
+				{
+					new Function("DrawCurve2D", "Draws a graph of a 2D curve.",
+						new ArrayParameter("XAxis", "Array of X-coordinate values.", true,
+						new NumberParameter("X", "An X-coordinate value.", true)),
+						new ArrayParameter("YAxis", "Array of Y-coordinate values.", true,
+						new NumberParameter("Y", "An Y-coordinate value.", true)),
+						new EnumerationParameter("Color", "Color of graph.",false,
+							"Red", "Green", "Blue", "Orange", "Cyan"))
+				});
+
+			Console.Error.WriteLine();
+			Console.Error.WriteLine();
+			Console.Error.WriteLine();
+			Console.Error.WriteLine(Response.Content);
+			Console.Error.WriteLine();
+			Console.Error.WriteLine(Response.FunctionName);
+			Console.Error.WriteLine(JSON.Encode(Response.FunctionArguments, true));
+
+			Assert.IsNotNull(Response.FunctionName);
+			Assert.IsNotNull(Response.FunctionArguments);
 		}
 
 	}

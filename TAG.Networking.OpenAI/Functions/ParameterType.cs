@@ -32,8 +32,8 @@
 		Boolean,
 
 		/// <summary>
-		/// Null parameter
+		/// Array parameter
 		/// </summary>
-		Null
+		Array
 	}
 }

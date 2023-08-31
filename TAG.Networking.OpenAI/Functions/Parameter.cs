@@ -13,10 +13,12 @@ namespace TAG.Networking.OpenAI.Functions
 		/// <param name="Name">The name of the function to be called. Must be a-z, A-Z, 0-9, or contain underscores and dashes, 
 		/// with a maximum length of 64.</param>
 		/// <param name="Description">A description of what the function does, used by the model to choose when and how to call the function.</param>
-		public Parameter(string Name, string Description)
+		/// <param name="Required">If parameter is required or not.</param>
+		public Parameter(string Name, string Description, bool Required)
 		{
 			this.Name = Name;
 			this.Description = Description;
+			this.Required = Required;
 		}
 
 		/// <summary>
@@ -29,6 +31,11 @@ namespace TAG.Networking.OpenAI.Functions
 		/// A description of what the function does, used by the model to choose when and how to call the function.
 		/// </summary>
 		public string Description { get; }
+
+		/// <summary>
+		/// If parameter is required or not.
+		/// </summary>
+		public bool Required { get; }
 
 		/// <summary>
 		/// Parameter Type
