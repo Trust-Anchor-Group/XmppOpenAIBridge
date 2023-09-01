@@ -224,6 +224,10 @@ namespace TAG.Things.OpenAI
 									Processed = await this.ShowVideo(XmppClient, e.FromBareJID, Response2.FunctionArguments);
 									break;
 
+								case "ShowYouTubeVideo":
+									Processed = await this.ShowYouTubeVideo(XmppClient, e.FromBareJID, Response2.FunctionArguments);
+									break;
+
 								case "PlayAudio":
 									Processed = await this.PlayAudio(XmppClient, e.FromBareJID, Response2.FunctionArguments);
 									break;
@@ -281,7 +285,12 @@ namespace TAG.Things.OpenAI
 						new IntegerParameter("Width","Width of image, in pixels.", false, 0, false, null, false),
 						new IntegerParameter("Height","Height of image, in pixels.", false, 0, false, null, false),
 						new StringParameter("Alt", "Alternative textual description of image, in cases the image cannot be shown.", false)))),
-			new Function("ShowVideo", "Displays a video (including YouTube video) to the user.",
+			new Function("ShowVideo", "Displays a video (not YouTube) to the user.",
+				new StringParameter("Url", "URL to the video to show.", true),
+				new StringParameter("Title", "A descriptive title of the video.", false),
+				new IntegerParameter("Width","Width of video, in pixels.", false, 0, false, null, false),
+				new IntegerParameter("Height","Height of video, in pixels.", false, 0, false, null, false)),
+			new Function("ShowYouTubeVideo", "Displays a video (specifically YouTube videos) to the user.",
 				new StringParameter("Url", "URL to the video to show.", true),
 				new StringParameter("Title", "A descriptive title of the video.", false),
 				new IntegerParameter("Width","Width of video, in pixels.", false, 0, false, null, false),
@@ -385,6 +394,50 @@ namespace TAG.Things.OpenAI
 					Markdown.Append(Height.ToString());
 				}
 			}
+
+			Markdown.Append(')');
+
+			StringBuilder Xml = new StringBuilder();
+			Xml.Append(await Gateway.GetMultiFormatChatMessageXml(Markdown.ToString(), true, true));
+
+			Xml.Append("<x xmlns='jabber:x:oob'><url>");
+			Xml.Append(XML.Encode(Url));
+			Xml.Append("</url></x>");
+
+			Client.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, string.Empty,
+				From, Xml.ToString(), string.Empty, string.Empty, string.Empty, string.Empty,
+				string.Empty, null, null);
+
+			return true;
+		}
+
+		private async Task<bool> ShowYouTubeVideo(XmppClient Client, string From, Dictionary<string, object> Arguments)
+		{
+			if (!Arguments.TryGetValue("Url", out object Obj) || !(Obj is string Url))
+				return false;
+
+			StringBuilder Markdown = new StringBuilder();
+			Markdown.Append("![");
+
+			if (Arguments.TryGetValue("Title", out Obj) && Obj is string Title)
+				Markdown.Append(MarkdownDocument.Encode(Title));
+
+			Markdown.Append("](");
+			Markdown.Append(Url);
+
+			if (Arguments.TryGetValue("Width", out Obj) && Obj is int Width)
+			{
+				Markdown.Append(' ');
+				Markdown.Append(Width.ToString());
+
+				if (Arguments.TryGetValue("Height", out Obj) && Obj is int Height)
+				{
+					Markdown.Append(' ');
+					Markdown.Append(Height.ToString());
+				}
+			}
+			else
+				Markdown.Append(" 800 400");
 
 			Markdown.Append(')');
 
