@@ -13,6 +13,7 @@ using Waher.Things;
 using Waher.Things.Attributes;
 using DP = Waher.Things.DisplayableParameters;
 using Waher.Runtime.Counters;
+using TAG.Networking.OpenAI.Functions;
 
 namespace TAG.Things.OpenAI
 {
@@ -118,7 +119,7 @@ namespace TAG.Things.OpenAI
 					StringBuilder Xml = new StringBuilder();
 					DateTime Last = DateTime.MinValue;
 
-					Message Response2 = await this.ChatQueryWithHistory(e.FromBareJID, Text, false,
+					Message Response2 = await this.ChatQueryWithHistory(e.FromBareJID, Text, chatFunctions, false,
 						async (Sender2, e2) =>
 						{
 							await RuntimeCounters.IncrementCounter(this.NodeId + ".Tx", e2.Diff.Length);
@@ -181,19 +182,25 @@ namespace TAG.Things.OpenAI
 			return Task.CompletedTask;
 		}
 
+		private readonly static Function[] chatFunctions = new Function[]
+		{
+		};
+
 		/// <summary>
 		/// Performs a chat completion query, maintaining a session history.
 		/// </summary>
 		/// <param name="From">Sender of query.</param>
 		/// <param name="Text">Text to send.</param>
+		/// <param name="Functions">Function definitions OpenAI can call.</param>
 		/// <param name="ClearSession">If session should be restarted or not.</param>
 		/// <param name="IntermediateResponseCallback">Callback method for intermediate callbacks.</param>
 		/// <param name="State">State object to pass on to callback method.</param>
 		/// <returns>Response from OpenAI. Can be null, if text send is empty, or does not include text.</returns>
-		public Task<Message> ChatQueryWithHistory(string From, string Text, bool ClearSession, 
+		public Task<Message> ChatQueryWithHistory(string From, string Text, Function[] Functions, bool ClearSession, 
 			StreamEventHandler IntermediateResponseCallback, object State)
 		{
-			return this.ChatQueryWithHistory(From, Text, this.Instructions, ClearSession, IntermediateResponseCallback, State);
+			return this.ChatQueryWithHistory(From, Text, this.Instructions, Functions, ClearSession, 
+				IntermediateResponseCallback, State);
 		}
 
 		/// <summary>
@@ -201,13 +208,14 @@ namespace TAG.Things.OpenAI
 		/// </summary>
 		/// <param name="From">Sender of query.</param>
 		/// <param name="Text">Text to send.</param>
+		/// <param name="Functions">Function definitions OpenAI can call.</param>
 		/// <param name="Instructions">Instructions for session.</param>
 		/// <param name="ClearSession">If session should be restarted or not.</param>
 		/// <param name="IntermediateResponseCallback">Callback method for intermediate callbacks.</param>
 		/// <param name="State">State object to pass on to callback method.</param>
 		/// <returns>Response from OpenAI. Can be null, if text send is empty, or does not include text.</returns>
-		public async Task<Message> ChatQueryWithHistory(string From, string Text, string Instructions, bool ClearSession,
-			StreamEventHandler IntermediateResponseCallback, object State)
+		public async Task<Message> ChatQueryWithHistory(string From, string Text, string Instructions, Function[] Functions,
+			bool ClearSession, StreamEventHandler IntermediateResponseCallback, object State)
 		{
 			await RuntimeCounters.IncrementCounter(this.NodeId + ".Rx", Text.Length);
 			await RuntimeCounters.IncrementCounter(this.NodeId + "." + From.ToLower() + ".Rx", Text.Length);
@@ -230,7 +238,7 @@ namespace TAG.Things.OpenAI
 
 					Session.Add(new UserMessage(Text), 4000);
 
-					Message Response2 = await Client.ChatGPT(Session.User.LowerCase, Session.Messages,
+					Message Response2 = await Client.ChatGPT(Session.User.LowerCase, Session.Messages, Functions,
 						IntermediateResponseCallback, State);
 
 					Session.Add(Response2, 4000);
