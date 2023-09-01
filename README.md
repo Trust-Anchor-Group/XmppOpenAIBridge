@@ -195,7 +195,7 @@ about the OpenAI-related functions referenced in this section is available in th
 
 | Function                                                                      | Description                                           |
 |-------------------------------------------------------------------------------|-------------------------------------------------------|
-| `ChatGpt(Instruction[,Sender],Text[,Functions],History[,Preview])             | Calls the chat completion API of OpenAI (ChatGPT). The `Instruction` argument contains initialization instructions. The optional `Sender` argument contains the JID of the sender. If not provided, the JID of the quick-login user will be used. Text is the chat message to send. `Functions` contains a single function definition or a vector of function definitions the API can call if it chooses to. `History` is a boolean parameter that indicates if the session history should be included in the query. The optional `Preview` argument indicates if intermediate responses are previewed during the execution of the query. The response to the call will be a message object containing either text content and/or information about a function to call. |
+| `ChatGpt(Instruction[,Sender],Text[,Functions],History[,Preview])             | Calls the chat completion API of OpenAI (ChatGPT). The `Instruction` argument contains initialization instructions. The optional `Sender` argument contains the JID of the sender. If not provided, the JID of the quick-login user will be used. Text is the chat message to send. `Functions` contains a single function definition or a vector of function definitions the API can call if it chooses to. `History` is a boolean parameter that indicates if the session history should be included in the query. The optional `Preview` argument indicates if intermediate content responses are previewed during the execution of the query. The response to the call will be an object containing a `Content` property with textual content, a `Function` property with function call information if available, including a `Result` property, containing any results from a function call. If a function call is requested, available function definitions or lambda expressions will be checked. If available, they will be called, with the arguments available from the API. |
 | `ChatGptConfigured()`                                                         | Checks if Chat GPT is configured correctly. It requires a Chat GPT<->XMPP Bridge node to be configured in the `MeteringTology` source, with the Node ID `ChatGPT`. |
 | `ChatGptArray(Name,Description,Required,ItemParameter)                        | Creates an array parameter for callback functions. The `ItemParameter` argument contains definition of each item in the array. |
 | `ChatGptBoolean(Name,Description,Required)                                    | Creates a Boolean parameter for callback functions. |
@@ -234,3 +234,34 @@ The String format enumeration can have the following values:
 | `JsonPointer`           | `json-pointer`                     | New in draft 6 A JSON Pointer, according to RFC6901. There is more discussion on the use of JSON Pointer within JSON Schema in Structuring a complex schema. Note that this should be used only when the entire string contains only JSON Pointer content, e.g. /foo/bar. JSON Pointer URI fragments, e.g. #/foo/bar/ should use "uri-reference". |
 | `RelativeJsonPointer`   | `relative-json-pointer`            | New in draft 7 A relative JSON pointer. |
 | `RegEx`                 | `regex`                            | New in draft 7 A regular expression, which should be valid according to the ECMA 262 dialect. |
+
+Example:
+
+```
+ShowImage(Image):=
+(
+	Get(Image.Url) ??? "Image not available"
+);
+
+ShowImages(Images):=
+(
+	[foreach Image in Images do ShowImage(Image)]
+);
+
+ChatGpt(
+	"You help users find images on the Internet, representative of the queries made by the user.",
+	"TestUser",
+	"Kan you find me some images of Kermit? If something is unclear, ask for additional information first. When ready to present images to the user, call available functions.",
+	ChatGptFunction("ShowImages", "Displays an array of images to the user.", [
+		ChatGptArray("Images", "Array of images to show.", true, 
+			ChatGptObject("Image", "Information about an image.", true, [
+				ChatGptString("Url", "URL to the image to show.", true),
+				ChatGptInteger("Width","Width of image, in pixels.", false, 0, false, null, false),
+				ChatGptInteger("Height","Height of image, in pixels.", false, 0, false, null, false),
+				ChatGptString("Alt", "Alternative textual description of image, in cases the image cannot be shown.", false)]))]),
+	false,
+	true)
+```
+
+**Note**: If running script with ChatGPT-services on a web server, you can use the associated script functions to push information
+asynchronously back to the web client using the [`PushEvent` script function](https://lab.tagroot.io/Script.md).

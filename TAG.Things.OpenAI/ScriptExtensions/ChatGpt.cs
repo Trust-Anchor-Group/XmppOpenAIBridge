@@ -265,7 +265,69 @@ namespace TAG.Things.OpenAI.ScriptExtensions
 					return Task.CompletedTask;
 				}, null);
 
-			return new ObjectValue(Response);
+			Dictionary<string, object> Result = new Dictionary<string, object>()
+			{
+				{ "Content", Response.Content }
+			};
+
+			if (!string.IsNullOrEmpty(Response.FunctionName))
+			{
+				Dictionary<string, object> Function = new Dictionary<string, object>()
+				{
+					{ "Name", Response.FunctionName },
+					{ "Arguments", Response.FunctionArguments }
+				};
+
+				Result["Function"] = Function;
+
+				foreach (Networking.OpenAI.Functions.Function F in Functions)
+				{
+					if (F.Name == Response.FunctionName)
+					{
+						if (Variables.TryGetVariable(Response.FunctionName, out Variable v) &&
+							v.ValueObject is ILambdaExpression Lambda)
+						{
+							Function["Result"] = await EvaluateLambda(Lambda, Response.FunctionArguments, Variables);
+							break;
+						}
+						else if (Variables.TryGetVariable(Response.FunctionName + " " + F.Parameters.Length.ToString(), out v) &&
+							v.ValueObject is ILambdaExpression Lambda2)
+						{
+							Function["Result"] = await EvaluateLambda(Lambda2, Response.FunctionArguments, Variables);
+							break;
+						}
+					}
+				}
+			}
+
+			return new ObjectValue(Result);
+		}
+
+		private static async Task<IElement> EvaluateLambda(ILambdaExpression Lambda, Dictionary<string, object> Arguments, Variables Variables)
+		{
+			try
+			{
+				int i, c = Lambda.NrArguments;
+				IElement[] Args = new IElement[Lambda.NrArguments];
+				string[] Names = Lambda.ArgumentNames;
+
+				for (i = 0; i < c; i++)
+				{
+					if (Arguments.TryGetValue(Names[i], out object Obj))
+						Args[i] = Expression.Encapsulate(Obj);
+					else
+						Args[i] = ObjectValue.Null;
+				}
+
+				if (Lambda.IsAsynchronous)
+					return await Lambda.EvaluateAsync(Args, Variables);
+				else
+					return Lambda.Evaluate(Args, Variables);
+			}
+			catch (Exception ex)
+			{
+				return new ObjectValue(ex);
+			}
 		}
 
 		private static string GetSender(IUser User)
