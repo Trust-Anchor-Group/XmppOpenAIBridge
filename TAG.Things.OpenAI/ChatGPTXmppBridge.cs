@@ -125,7 +125,28 @@ namespace TAG.Things.OpenAI
 					Message Response2 = await this.ChatQueryWithHistory(e.FromBareJID, Text, chatFunctions, false,
 						async (Sender2, e2) =>
 						{
-							if (!string.IsNullOrEmpty(e2.Diff))
+							if (string.IsNullOrEmpty(e2.Diff))
+							{
+								if (First)
+								{
+									First = false;
+									Last = DateTime.Now;
+
+									Xml.Clear();
+									if (e2.Finished)
+										Xml.Append("<active xmlns='http://jabber.org/protocol/chatstates'/>");
+									else
+										Xml.Append("<composing xmlns='http://jabber.org/protocol/chatstates'/>");
+
+									string Markdown = string.IsNullOrEmpty(e2.Total) ? "⧖" : e2.Total;
+									Xml.Append(await Gateway.GetMultiFormatChatMessageXml(Markdown, true, true));
+
+									XmppClient.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, MessageId,
+										e.From, Xml.ToString(), string.Empty, string.Empty, string.Empty, string.Empty,
+										string.Empty, null, null);
+								}
+							}
+							else
 							{
 								await RuntimeCounters.IncrementCounter(this.NodeId + ".Tx", e2.Diff.Length);
 								await RuntimeCounters.IncrementCounter(this.NodeId + "." + e.FromBareJID.ToLower() + ".Tx", e2.Diff.Length);
@@ -419,6 +440,7 @@ namespace TAG.Things.OpenAI
 
 			if (Arguments.TryGetValue("Title", out Obj) && Obj is string Title)
 			{
+				Markdown.Append('[');
 				Markdown.Append(MarkdownDocument.Encode(Title));
 				Markdown.Append("](");
 				Markdown.Append(Url);
