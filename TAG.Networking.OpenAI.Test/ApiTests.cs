@@ -233,7 +233,7 @@ namespace TAG.Networking.OpenAI.Test
 				"{\"prompt\":\"Was Kilroy here?\",\"completion\":\"Yes, Kilroy was here.\"}",
 				"Kilroy.jsonl", Purpose.fine_tune);
 
-			await Task.Delay(1000);
+			await Task.Delay(10000);
 
 			await client.DeleteFile(Ref.Id);
 		}

@@ -52,7 +52,7 @@ namespace TAG.Things.OpenAI.ScriptExtensions
 		{
 			string Name = Arguments[0].AssociatedObjectValue?.ToString() ?? string.Empty;
 			string Description = Arguments[1].AssociatedObjectValue?.ToString() ?? string.Empty;
-			IVector V = Arguments[2].AssociatedObjectValue as IVector;
+			IVector V = Arguments[2] as IVector;
 
 			if (V is null)
 				throw new ScriptRuntimeException("Expected function parameters to be a vector.", this);
