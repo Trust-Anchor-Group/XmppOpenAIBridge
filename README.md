@@ -248,7 +248,7 @@ ShowImages(Images):=
 	[foreach Image in Images do ShowImage(Image)]
 );
 
-ChatGpt(
+R:=ChatGpt(
 	"You help users find images on the Internet, representative of the queries made by the user.",
 	"TestUser",
 	"Kan you find me some images of Kermit? If something is unclear, ask for additional information first. When ready to present images to the user, call available functions.",
@@ -265,3 +265,98 @@ ChatGpt(
 
 **Note**: If running script with ChatGPT-services on a web server, you can use the associated script functions to push information
 asynchronously back to the web client using the [`PushEvent` script function](https://lab.tagroot.io/Script.md).
+
+Example Result (prettyfied):
+
+```
+{
+   "Content": "",
+   "Function": {
+      "Name": "ShowImages",
+      "Arguments": {
+         "Images": [
+            {
+               "Url": "https://upload.wikimedia.org/wikipedia/en/6/62/Kermit_the_Frog.jpg",
+               "Width": 220,
+               "Height": 252,
+               "Alt": "Kermit the Frog"
+            },
+            {
+               "Url": "https://static.wikia.nocookie.net/muppet/images/7/79/Kermitfullfigure.jpg",
+               "Width": 323,
+               "Height": 643,
+               "Alt": "Full-length image of Kermit"
+            },
+            {
+               "Url": "https://c.tenor.com/3o6_GbQ7Ic8AAAAd/kermit-the-frog-dancing.gif",
+               "Width": 499,
+               "Height": 280,
+               "Alt": "Kermit dancing gif"
+            }
+         ]
+      },
+      "Result": [
+         {
+            "Width": 282,
+            "Height": 353,
+            "UniqueId": 542,
+            "AlphaType": "Opaque",
+            "ColorType": "Bgra8888",
+            "ColorSpace": null,
+            "IsAlphaOnly": false,
+            "EncodedData": null,
+            "Info": {
+               "Width": 282,
+               "Height": 353,
+               "ColorType": "Bgra8888",
+               "AlphaType": "Opaque",
+               "ColorSpace": null,
+               "BytesPerPixel": 4,
+               "BitsPerPixel": 32,
+               "BytesSize": 398184,
+               "BytesSize64": 398184,
+               "RowBytes": 1128,
+               "RowBytes64": 1128,
+               "IsEmpty": false,
+               "IsOpaque": true,
+               "Size": {
+                  "IsEmpty": false,
+                  "Width": 282,
+                  "Height": 353
+               },
+               "Rect": {
+                  "MidX": 141,
+                  "MidY": 176,
+                  "Width": 282,
+                  "Height": 353,
+                  "IsEmpty": false,
+                  "Size": {
+                     "IsEmpty": false,
+                     "Width": 282,
+                     "Height": 353
+                  },
+                  "Location": {
+                     "IsEmpty": true,
+                     "Length": 0,
+                     "LengthSquared": 0,
+                     "X": 0,
+                     "Y": 0
+                  },
+                  "Left": 0,
+                  "Top": 0,
+                  "Right": 282,
+                  "Bottom": 353
+               }
+            },
+            "IsTextureBacked": false,
+            "IsLazyGenerated": false,
+            "Handle": {
+               "Size": 4
+            }
+         },
+         "Image not available",
+         "Image not available"
+      ]
+   }
+}
+```
