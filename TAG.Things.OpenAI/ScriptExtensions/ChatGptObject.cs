@@ -55,9 +55,8 @@ namespace TAG.Things.OpenAI.ScriptExtensions
 			string Name = Arguments[0].AssociatedObjectValue?.ToString() ?? string.Empty;
 			string Description = Arguments[1].AssociatedObjectValue?.ToString() ?? string.Empty;
 			bool Required = If.ToBoolean(Arguments[2]) ?? false;
-			IVector V = Arguments[3] as IVector;
 
-			if (V is null)
+			if (!(Arguments[3] is IVector V))
 				throw new ScriptRuntimeException("Expected object properties to be a vector.", this);
 
 			List<Parameter> Properties = new List<Parameter>();
