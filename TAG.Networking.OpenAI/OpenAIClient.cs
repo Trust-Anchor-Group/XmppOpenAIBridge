@@ -198,8 +198,11 @@ namespace TAG.Networking.OpenAI
 				foreach (Function F in Functions)
 					FunctionsArray.Add(F.ToJson());
 
-				Request["functions"] = FunctionsArray.ToArray();
-				Request["function_call"] = "auto";
+				if (FunctionsArray.Count > 0)
+				{
+					Request["functions"] = FunctionsArray.ToArray();
+					Request["function_call"] = "auto";
+				}
 			}
 
 			if (!string.IsNullOrEmpty(User))
