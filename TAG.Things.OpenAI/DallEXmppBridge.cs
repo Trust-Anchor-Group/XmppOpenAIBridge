@@ -121,6 +121,7 @@ namespace TAG.Things.OpenAI
 					Xml.Append("<replace id='");
 					Xml.Append(MessageId);
 					Xml.Append("' xmlns='urn:xmpp:message-correct:0'/>");
+					Xml.Append("<muteDiff xmlns='http://waher.se/Schema/Editing.xsd'/>");
 
 					Text = await ConvertTextIfSpeech(Client, Text);
 					if (string.IsNullOrEmpty(Text))

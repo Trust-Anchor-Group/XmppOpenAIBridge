@@ -139,6 +139,7 @@ namespace TAG.Things.OpenAI
 								Xml.Append("<replace id='");
 								Xml.Append(MessageId);
 								Xml.Append("' xmlns='urn:xmpp:message-correct:0'/>");
+								Xml.Append("<muteDiff xmlns='http://waher.se/Schema/Editing.xsd'/>");
 							}
 
 							if (e2.Finished)
@@ -163,6 +164,7 @@ namespace TAG.Things.OpenAI
 							Xml.Append("<replace id='");
 							Xml.Append(MessageId);
 							Xml.Append("' xmlns='urn:xmpp:message-correct:0'/>");
+							Xml.Append("<muteDiff xmlns='http://waher.se/Schema/Editing.xsd'/>");
 						}
 
 						Xml.Append("<active xmlns='http://jabber.org/protocol/chatstates'/>");
