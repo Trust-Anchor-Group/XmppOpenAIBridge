@@ -596,6 +596,17 @@ namespace TAG.Things.OpenAI
 
 					Session.Add(Response2, 4000);
 
+					int c = Response2.Content?.Length ?? 0;
+
+					if (!string.IsNullOrEmpty(Response2.FunctionName))
+					{
+						c += Response2.FunctionName.Length;
+						c += JSON.Encode(Response2.FunctionArguments, false).Length;
+					}
+
+					await RuntimeCounters.IncrementCounter(this.NodeId + ".Tx", c);
+					await RuntimeCounters.IncrementCounter(this.NodeId + "." + From.ToLower() + ".Tx", c);
+
 					return Response2;
 				}
 				else
