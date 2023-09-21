@@ -10,6 +10,7 @@ using TAG.Things.OpenAI;
 using Waher.Content;
 using Waher.Content.Markdown;
 using Waher.Content.Markdown.Model;
+using Waher.Content.Markdown.Model.CodeContent;
 using Waher.Content.Markdown.Model.SpanElements;
 using Waher.Content.Xml;
 using Waher.Runtime.Inventory;
@@ -99,6 +100,11 @@ namespace TAG.Content.Markdown.OpenAI
 		{
 			// Do nothing.
 		}
+
+		/// <summary>
+		/// If (transportable) Markdown is handled.
+		/// </summary>
+		public bool HandlesMarkdown => true;
 
 		/// <summary>
 		/// If HTML is handled.
@@ -260,6 +266,24 @@ namespace TAG.Content.Markdown.OpenAI
 			}
 
 			return Result;
+		}
+
+		/// <summary>
+		/// Generates (transportable) Markdown for the markdown element.
+		/// </summary>
+		/// <param name="Output">HTML will be output here.</param>
+		/// <param name="Rows">Code rows.</param>
+		/// <param name="Language">Language used.</param>
+		/// <param name="Indent">Additional indenting.</param>
+		/// <param name="Document">Markdown document containing element.</param>
+		/// <returns>If content was rendered. If returning false, the default rendering of the code block will be performed.</returns>
+		public async Task<bool> GenerateMarkdown(StringBuilder Output, string[] Rows, string Language, int Indent, MarkdownDocument Document)
+		{
+			GraphInfo Info = await GetFileName(Language, Rows, true);
+			if (Info?.FileName is null)
+				return false;
+
+			return await ImageContent.GenerateMarkdownFromFile(Output, Info.FileName, Info.Title);
 		}
 
 		/// <summary>
