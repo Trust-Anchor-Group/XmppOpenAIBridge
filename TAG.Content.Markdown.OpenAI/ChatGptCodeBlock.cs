@@ -103,6 +103,11 @@ namespace TAG.Content.Markdown.OpenAI
 		public bool HandlesLaTeX => true;
 
 		/// <summary>
+		/// If Smart Contract XML is handled.
+		/// </summary>
+		public bool HandlesSmartContract => true;
+
+		/// <summary>
 		/// Generates HTML for the markdown element.
 		/// </summary>
 		/// <param name="Output">HTML will be output here.</param>
@@ -326,6 +331,24 @@ namespace TAG.Content.Markdown.OpenAI
 
 			Output.AppendLine(Text);
 			Output.AppendLine();
+
+			return true;
+		}
+
+		/// <summary>
+		/// Generates LaTeX text for the markdown element.
+		/// </summary>
+		/// <param name="Output">LaTeX will be output here.</param>
+		/// <param name="Rows">Code rows.</param>
+		/// <param name="Language">Language used.</param>
+		/// <param name="Indent">Additional indenting.</param>
+		/// <param name="Document">Markdown document containing element.</param>
+		/// <returns>If content was rendered. If returning false, the default rendering of the code block will be performed.</returns>
+		public async Task<bool> GenerateSmartContractXml(XmlWriter Output, SmartContractRenderState State, string[] Rows, string Language, int Indent, MarkdownDocument Document)
+		{
+			string Text = await GetText(Language, Rows, true);
+			MarkdownDocument Doc = await MarkdownDocument.CreateAsync(Text, Document.Settings);
+			await Doc.GenerateSmartContractXml(Output);
 
 			return true;
 		}

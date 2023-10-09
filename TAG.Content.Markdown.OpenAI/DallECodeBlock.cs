@@ -127,6 +127,11 @@ namespace TAG.Content.Markdown.OpenAI
 		public bool HandlesLaTeX => true;
 
 		/// <summary>
+		/// If Smart Contract XML is handled.
+		/// </summary>
+		public bool HandlesSmartContract => true;
+
+		/// <summary>
 		/// Generates HTML for the markdown element.
 		/// </summary>
 		/// <param name="Output">HTML will be output here.</param>
@@ -408,6 +413,86 @@ namespace TAG.Content.Markdown.OpenAI
 			using (SKBitmap Bitmap = SKBitmap.Decode(Data))
 			{
 				return new PixelInformationPng(Data, Bitmap.Width, Bitmap.Height);
+			}
+		}
+
+		/// <summary>
+		/// Generates LaTeX text for the markdown element.
+		/// </summary>
+		/// <param name="Output">LaTeX will be output here.</param>
+		/// <param name="Rows">Code rows.</param>
+		/// <param name="Language">Language used.</param>
+		/// <param name="Indent">Additional indenting.</param>
+		/// <param name="Document">Markdown document containing element.</param>
+		/// <returns>If content was rendered. If returning false, the default rendering of the code block will be performed.</returns>
+		public async Task<bool> GenerateSmartContractXml(XmlWriter Output, SmartContractRenderState State, string[] Rows, string Language, int Indent, MarkdownDocument Document)
+		{
+			try
+			{
+				GraphInfo Info = await GetFileName(Language, Rows, true);
+				if (Info?.FileName is null)
+					return false;
+
+				if (!InternetContent.TryGetContentType(Path.GetExtension(Info.FileName), out string ContentType))
+					return false;
+
+				byte[] Bin = File.ReadAllBytes(Info.FileName);
+				string Base64 = Convert.ToBase64String(Bin);
+				int Width, Height;
+
+				switch (Info.ImageSize)
+				{
+					case ImageSize.ImageSize256x256:
+						Width = Height = 256;
+						break;
+
+					case ImageSize.ImageSize512x512:
+						Width = Height = 512;
+						break;
+
+					case ImageSize.ImageSize1024x1024:
+						Width = Height = 1024;
+						break;
+
+					default:
+						object Obj = await InternetContent.DecodeAsync(ContentType, Bin, null);
+						if (!(Obj is SKImage Image))
+						{
+							if (Obj is IDisposable Disposable)
+								Disposable.Dispose();
+
+							return false;
+						}
+
+						Width = Image.Width;
+						Height = Image.Height;
+						Image.Dispose();
+						break;
+				}
+
+				Output.WriteStartElement("imageStandalone");
+				Output.WriteAttributeString("contentType", ContentType);
+				Output.WriteAttributeString("width", Width.ToString());
+				Output.WriteAttributeString("height", Height.ToString());
+
+				Output.WriteStartElement("binary");
+				Output.WriteValue(Base64);
+				Output.WriteEndElement();
+
+				Output.WriteStartElement("caption");
+				if (string.IsNullOrEmpty(Info.Title))
+					Output.WriteElementString("text", "Image");
+				else
+					Output.WriteElementString("text", Info.Title);
+
+				Output.WriteEndElement();
+				Output.WriteEndElement();
+
+				return true;
+			}
+			catch (Exception)
+			{
+				return false;
 			}
 		}
 
