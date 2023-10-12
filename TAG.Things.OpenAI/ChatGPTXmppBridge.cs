@@ -591,8 +591,15 @@ namespace TAG.Things.OpenAI
 
 					Session.Add(new UserMessage(Text), 4000);
 
-					Message Response2 = await Client.ChatGPT(Session.User.LowerCase, Session.Messages, Functions,
-						IntermediateResponseCallback, State);
+					Message Response2;
+
+					if (IntermediateResponseCallback is null)
+						Response2 = await Client.ChatGPT(Session.User.LowerCase, Session.Messages, Functions);
+					else
+					{
+						Response2 = await Client.ChatGPT(Session.User.LowerCase, Session.Messages, Functions,
+							IntermediateResponseCallback, State);
+					}
 
 					Session.Add(Response2, 4000);
 

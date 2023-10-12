@@ -256,14 +256,21 @@ namespace TAG.Things.OpenAI.ScriptExtensions
 					throw new ScriptRuntimeException("Unable to determine sender.", this);
 			}
 
-			Message Response = await ChatGpt.ChatQueryWithHistory(Sender, Text, Instruction, Functions?.ToArray(),
-				!History, (sender, e) =>
-				{
-					if (Preview && Variables.HandlesPreview && !string.IsNullOrEmpty(e.Total))
-						Variables.Preview(this.Expression, new StringValue(e.Total));
+			Message Response;
 
-					return Task.CompletedTask;
-				}, null);
+			if (Preview)
+			{
+				Response = await ChatGpt.ChatQueryWithHistory(Sender, Text, Instruction, Functions?.ToArray(),
+					!History, (sender, e) =>
+					{
+						if (Preview && Variables.HandlesPreview && !string.IsNullOrEmpty(e.Total))
+							Variables.Preview(this.Expression, new StringValue(e.Total));
+
+						return Task.CompletedTask;
+					}, null);
+			}
+			else
+				Response = await ChatGpt.ChatQueryWithHistory(Sender, Text, Instruction, Functions?.ToArray(), !History, null, null);
 
 			Dictionary<string, object> Result = new Dictionary<string, object>()
 			{
