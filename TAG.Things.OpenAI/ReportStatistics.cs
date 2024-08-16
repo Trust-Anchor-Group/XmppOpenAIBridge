@@ -260,7 +260,7 @@ namespace TAG.Things.OpenAI
 			}
 			catch (Exception ex)
 			{
-				Log.Critical(ex);
+				Log.Exception(ex);
 				await Query.LogMessage(QueryEventType.Exception, QueryEventLevel.Major, ex.Message);
 			}
 			finally

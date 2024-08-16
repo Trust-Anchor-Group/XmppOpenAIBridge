@@ -372,7 +372,7 @@ namespace TAG.Networking.OpenAI
 								}
 								catch (Exception ex)
 								{
-									Log.Critical(ex);
+									Log.Exception(ex);
 								}
 
 								if (Finished)
@@ -392,7 +392,7 @@ namespace TAG.Networking.OpenAI
 									}
 									catch (Exception ex)
 									{
-										Log.Critical(ex);
+										Log.Exception(ex);
 									}
 								}
 
@@ -409,7 +409,7 @@ namespace TAG.Networking.OpenAI
 							}
 							catch (Exception ex)
 							{
-								Log.Critical(ex);
+								Log.Exception(ex);
 							}
 						}
 					}
