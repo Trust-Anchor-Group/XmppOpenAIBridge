@@ -132,7 +132,7 @@ namespace TAG.Content.Markdown.OpenAI
 			else
 				Title = null;
 
-			string Id = await OpenAIModule.AsyncHtmlOutput.GenerateStub(MarkdownOutputType.Html, Output, Title);
+			string Id = await OpenAIModule.AsyncHtmlOutput.GenerateStub(MarkdownOutputType.Html, Output, Title, Document);
 
 			Document.QueueAsyncTask(async (_) =>
 			{

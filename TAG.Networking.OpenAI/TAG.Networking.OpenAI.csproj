@@ -5,10 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Waher.Content" Version="2.6.11" />
-    <PackageReference Include="Waher.Events" Version="1.2.0" />
-    <PackageReference Include="Waher.Networking" Version="2.2.6" />
-    <PackageReference Include="Waher.Runtime.Temporary" Version="1.0.0" />
+    <PackageReference Include="Waher.Content" Version="2.6.12" />
+    <PackageReference Include="Waher.Events" Version="1.2.1" />
+    <PackageReference Include="Waher.Networking" Version="2.3.0" />
+    <PackageReference Include="Waher.Runtime.Temporary" Version="1.0.1" />
   </ItemGroup>
 
 </Project>
