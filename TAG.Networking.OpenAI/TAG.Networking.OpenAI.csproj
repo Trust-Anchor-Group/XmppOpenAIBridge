@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Waher.Content" Version="2.6.12" />
+    <PackageReference Include="Waher.Content" Version="2.6.13" />
     <PackageReference Include="Waher.Events" Version="1.2.1" />
     <PackageReference Include="Waher.Networking" Version="2.3.0" />
     <PackageReference Include="Waher.Runtime.Temporary" Version="1.0.1" />
