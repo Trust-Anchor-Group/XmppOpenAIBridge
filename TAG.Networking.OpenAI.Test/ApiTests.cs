@@ -280,12 +280,12 @@ namespace TAG.Networking.OpenAI.Test
 				},
 				new Function[]
 				{
-					new Function("ShowImage", "Displays an image to the user.",
+					new("ShowImage", "Displays an image to the user.",
 						new StringParameter("Url", "URL to the image to show.", true),
 						new IntegerParameter("Width","Width of image, in pixels.", false, 0, false, null, false),
 						new IntegerParameter("Height","Height of image, in pixels.", false, 0, false, null, false),
 						new StringParameter("Alt", "Alternative textual description of image, in cases the image cannot be shown.", false)),
-					new Function("ShowImages", "Displays an array of images to the user.",
+					new("ShowImages", "Displays an array of images to the user.",
 						new ArrayParameter("Images", "Array of images to show.", true,
 						new ObjectParameter("Image", "Information about an image.", true,
 						new StringParameter("Url", "URL to the image to show.", true),
@@ -314,12 +314,12 @@ namespace TAG.Networking.OpenAI.Test
 				},
 				new Function[]
 				{
-					new Function("ShowImage", "Displays an image to the user.",
+					new("ShowImage", "Displays an image to the user.",
 						new StringParameter("Url", "URL to the image to show.", true),
 						new IntegerParameter("Width","Width of image, in pixels.", false, 0, false, null, false),
 						new IntegerParameter("Height","Height of image, in pixels.", false, 0, false, null, false),
 						new StringParameter("Alt", "Alternative textual description of image, in cases the image cannot be shown.", false)),
-					new Function("ShowImages", "Displays an array of images to the user.",
+					new("ShowImages", "Displays an array of images to the user.",
 						new ArrayParameter("Images", "Array of images to show.", true,
 						new ObjectParameter("Image", "Information about an image.", true,
 						new StringParameter("Url", "URL to the image to show.", true),
@@ -362,7 +362,7 @@ namespace TAG.Networking.OpenAI.Test
 				},
 				new Function[]
 				{
-					new Function("DrawCurve2D", "Draws a graph of a 2D curve.",
+					new("DrawCurve2D", "Draws a graph of a 2D curve.",
 						new ArrayParameter("XAxis", "Array of X-coordinate values.", true,
 						new NumberParameter("X", "An X-coordinate value.", true)),
 						new ArrayParameter("YAxis", "Array of Y-coordinate values.", true,

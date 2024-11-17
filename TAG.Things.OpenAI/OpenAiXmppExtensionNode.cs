@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using TAG.Networking.OpenAI;
 using Waher.Content;
+using Waher.Networking;
 using Waher.Networking.Sniffers;
 using Waher.Networking.XMPP;
 using Waher.Runtime.Inventory;
@@ -16,9 +17,9 @@ namespace TAG.Things.OpenAI
 	/// <summary>
 	/// Abstract base class for OpenAI extension nodes.
 	/// </summary>
-	public abstract class OpenAiXmppExtensionNode : XmppExtensionNode, ISniffable
+	public abstract class OpenAiXmppExtensionNode : XmppExtensionNode, ICommunicationLayer
 	{
-		private readonly Sniffable sniffers = new Sniffable();
+		private readonly CommunicationLayer sniffers = new CommunicationLayer(true);
 		private readonly LinkedList<XmppClient> clients = new LinkedList<XmppClient>();
 
 		/// <summary>
@@ -38,7 +39,7 @@ namespace TAG.Things.OpenAI
 		[Masked]
 		public string ApiKey { get; set; }
 
-		#region ISniffable
+		#region ICommunicationLayer
 
 		public ISniffer[] Sniffers => this.sniffers.Sniffers;
 		public bool HasSniffers => this.sniffers.HasSniffers;
@@ -47,6 +48,27 @@ namespace TAG.Things.OpenAI
 		public bool Remove(ISniffer Sniffer) => this.sniffers.Remove(Sniffer);
 		public IEnumerator<ISniffer> GetEnumerator() => this.sniffers.GetEnumerator();
 		IEnumerator IEnumerable.GetEnumerator() => this.sniffers.GetEnumerator();
+
+		public bool DecoupledEvents => this.sniffers.DecoupledEvents;
+
+		public Task ReceiveBinary(byte[] Data) => this.sniffers.ReceiveBinary(Data) ?? Task.CompletedTask;
+		public Task TransmitBinary(byte[] Data) => this.sniffers.TransmitBinary(Data) ?? Task.CompletedTask;
+		public Task ReceiveText(string Text) => this.sniffers.ReceiveText(Text) ?? Task.CompletedTask;
+		public Task TransmitText(string Text) => this.sniffers.TransmitText(Text) ?? Task.CompletedTask;
+		public Task Information(string Comment) => this.sniffers.Information(Comment) ?? Task.CompletedTask;
+		public Task Warning(string Warning) => this.sniffers.Warning(Warning) ?? Task.CompletedTask;
+		public Task Error(string Error) => this.sniffers.Error(Error) ?? Task.CompletedTask;
+		public Task Exception(Exception Exception) => this.sniffers.Exception(Exception) ?? Task.CompletedTask;
+		public Task Exception(string Exception) => this.sniffers.Exception(Exception) ?? Task.CompletedTask;
+		public Task ReceiveBinary(DateTime Timestamp, byte[] Data) => this.sniffers.ReceiveBinary(Timestamp, Data) ?? Task.CompletedTask;
+		public Task TransmitBinary(DateTime Timestamp, byte[] Data) => this.sniffers.TransmitBinary(Timestamp, Data) ?? Task.CompletedTask;
+		public Task ReceiveText(DateTime Timestamp, string Text) => this.sniffers.ReceiveText(Timestamp, Text) ?? Task.CompletedTask;
+		public Task TransmitText(DateTime Timestamp, string Text) => this.sniffers.TransmitText(Timestamp, Text) ?? Task.CompletedTask;
+		public Task Information(DateTime Timestamp, string Comment) => this.sniffers.Information(Timestamp, Comment) ?? Task.CompletedTask;
+		public Task Warning(DateTime Timestamp, string Warning) => this.sniffers.Warning(Timestamp, Warning) ?? Task.CompletedTask;
+		public Task Error(DateTime Timestamp, string Error) => this.sniffers.Error(Timestamp, Error) ?? Task.CompletedTask;
+		public Task Exception(DateTime Timestamp, string Exception) => this.sniffers.Exception(Timestamp, Exception) ?? Task.CompletedTask;
+		public Task Exception(DateTime Timestamp, Exception Exception) => this.sniffers.Exception(Timestamp, Exception) ?? Task.CompletedTask;
 
 		#endregion
 

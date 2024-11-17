@@ -12,6 +12,7 @@ using Waher.Content;
 using Waher.Content.Getters;
 using Waher.Content.Multipart;
 using Waher.Events;
+using Waher.Networking;
 using Waher.Networking.Sniffers;
 using Waher.Runtime.Temporary;
 
@@ -44,7 +45,7 @@ namespace TAG.Networking.OpenAI
 	/// Reference:
 	/// https://platform.openai.com/docs/api-reference
 	/// </summary>
-	public class OpenAIClient : Sniffable, IDisposable
+	public class OpenAIClient : CommunicationLayer, IDisposable
 	{
 		private static readonly Uri chatCompletionsUri = new Uri("https://api.openai.com/v1/chat/completions");
 		private static readonly Uri audioTranscriptionsUri = new Uri("https://api.openai.com/v1/audio/transcriptions");
@@ -71,7 +72,7 @@ namespace TAG.Networking.OpenAI
 		/// <param name="ApiKey">API Key</param>
 		/// <param name="Sniffers">Optional sniffers</param>
 		public OpenAIClient(string Model, string ApiKey, params ISniffer[] Sniffers)
-			: base(Sniffers)
+			: base(true, Sniffers)
 		{
 			this.model = Model;
 			this.apiKey = ApiKey;
@@ -220,7 +221,7 @@ namespace TAG.Networking.OpenAI
 				sb.Append(JSON.Encode(Request, true));
 				sb.Append(")");
 
-				this.TransmitText(sb.ToString());
+				await this.TransmitText(sb.ToString());
 			}
 
 			try
@@ -234,7 +235,7 @@ namespace TAG.Networking.OpenAI
 						new KeyValuePair<string, string>("Authorization", "Bearer " + this.apiKey));
 
 					if (this.HasSniffers)
-						this.ReceiveText(JSON.Encode(ResponseObj, true));
+						await this.ReceiveText(JSON.Encode(ResponseObj, true));
 
 					if (!(ResponseObj is Dictionary<string, object> Response))
 						throw new Exception("Unexpected response returned: " + ResponseObj.GetType().FullName);
@@ -288,7 +289,7 @@ namespace TAG.Networking.OpenAI
 							object ResponseObj;
 
 							if (this.HasSniffers)
-								this.ReceiveText(Line);
+								await this.ReceiveText(Line);
 
 							if (Line.StartsWith("data:"))
 							{
@@ -301,7 +302,7 @@ namespace TAG.Networking.OpenAI
 								catch (Exception ex)
 								{
 									if (this.HasSniffers)
-										this.Error(ex.Message);
+										await this.Error(ex.Message);
 
 									continue;
 								}
@@ -309,7 +310,7 @@ namespace TAG.Networking.OpenAI
 								if (!(ResponseObj is Dictionary<string, object> Response))
 								{
 									if (this.HasSniffers)
-										this.Error("Unexpected response returned: " + ResponseObj.GetType().FullName);
+										await this.Error("Unexpected response returned: " + ResponseObj.GetType().FullName);
 
 									continue;
 								}
@@ -322,7 +323,7 @@ namespace TAG.Networking.OpenAI
 									!(Obj is Dictionary<string, object> DeltaObj))
 								{
 									if (this.HasSniffers)
-										this.Error("Delta not found in response.");
+										await this.Error("Delta not found in response.");
 
 									continue;
 								}
@@ -330,7 +331,7 @@ namespace TAG.Networking.OpenAI
 								if (!Message.TryParseDelta(DeltaObj, ref Result, out string Diff))
 								{
 									if (this.HasSniffers)
-										this.Error("Unable to parse response.");
+										await this.Error("Unable to parse response.");
 
 									continue;
 								}
@@ -357,7 +358,7 @@ namespace TAG.Networking.OpenAI
 												{
 													Result.FunctionName = null;
 													if (this.HasSniffers)
-														this.Error(ex.Message);
+														await this.Error(ex.Message);
 												}
 											}
 											break;
@@ -457,7 +458,7 @@ namespace TAG.Networking.OpenAI
 		public async Task<string> Whisper(Uri Uri)
 		{
 			if (this.HasSniffers)
-				this.TransmitText("GET(" + Uri.ToString() + ")");
+				await this.TransmitText("GET(" + Uri.ToString() + ")");
 
 			KeyValuePair<string, TemporaryStream> P = await InternetContent.GetTempStreamAsync(Uri, 60000,
 				new KeyValuePair<string, string>("User-Agent", typeof(OpenAIClient).FullName));
@@ -466,7 +467,7 @@ namespace TAG.Networking.OpenAI
 			using (TemporaryStream File = P.Value)
 			{
 				if (this.HasSniffers)
-					this.ReceiveText(File.Length.ToString() + " bytes received.");
+					await this.ReceiveText(File.Length.ToString() + " bytes received.");
 
 				File.Position = 0;
 
@@ -556,7 +557,7 @@ namespace TAG.Networking.OpenAI
 				sb.Append(Encoding.UTF8.GetString(Encoded));
 				sb.Append(")");
 
-				this.TransmitText(sb.ToString());
+				await this.TransmitText(sb.ToString());
 			}
 
 			try
@@ -569,7 +570,7 @@ namespace TAG.Networking.OpenAI
 				object ResponseObj = await InternetContent.DecodeAsync(P2.Value, P2.Key, audioTranscriptionsUri);
 
 				if (this.HasSniffers)
-					this.ReceiveText(JSON.Encode(ResponseObj, true));
+					await this.ReceiveText(JSON.Encode(ResponseObj, true));
 
 				if (!(ResponseObj is Dictionary<string, object> Response))
 					throw new Exception("Unexpected response returned: " + ResponseObj.GetType().FullName);
@@ -659,7 +660,7 @@ namespace TAG.Networking.OpenAI
 				sb.Append(JSON.Encode(Request, true));
 				sb.Append(")");
 
-				this.TransmitText(sb.ToString());
+				await this.TransmitText(sb.ToString());
 			}
 
 			try
@@ -669,7 +670,7 @@ namespace TAG.Networking.OpenAI
 					new KeyValuePair<string, string>("Authorization", "Bearer " + this.apiKey));
 
 				if (this.HasSniffers)
-					this.ReceiveText(JSON.Encode(ResponseObj, true));
+					await this.ReceiveText(JSON.Encode(ResponseObj, true));
 
 				if (!(ResponseObj is Dictionary<string, object> Response))
 					throw new Exception("Unexpected response returned: " + ResponseObj.GetType().FullName);
@@ -719,7 +720,7 @@ namespace TAG.Networking.OpenAI
 				sb.Append(filesUri.ToString());
 				sb.Append(")");
 
-				this.TransmitText(sb.ToString());
+				await this.TransmitText(sb.ToString());
 			}
 
 			try
@@ -729,7 +730,7 @@ namespace TAG.Networking.OpenAI
 					new KeyValuePair<string, string>("Authorization", "Bearer " + this.apiKey));
 
 				if (this.HasSniffers)
-					this.ReceiveText(JSON.Encode(ResponseObj, true));
+					await this.ReceiveText(JSON.Encode(ResponseObj, true));
 
 				if (!(ResponseObj is Dictionary<string, object> Response))
 					throw new Exception("Unexpected response returned: " + ResponseObj.GetType().FullName);
@@ -824,7 +825,7 @@ namespace TAG.Networking.OpenAI
 				sb.Append(Encoding.UTF8.GetString(Encoded));
 				sb.Append(")");
 
-				this.TransmitText(sb.ToString());
+				await this.TransmitText(sb.ToString());
 			}
 
 			try
@@ -837,7 +838,7 @@ namespace TAG.Networking.OpenAI
 				object ResponseObj = await InternetContent.DecodeAsync(P2.Value, P2.Key, audioTranscriptionsUri);
 
 				if (this.HasSniffers)
-					this.ReceiveText(JSON.Encode(ResponseObj, true));
+					await this.ReceiveText(JSON.Encode(ResponseObj, true));
 
 				if (!FileReference.TryParse(ResponseObj, out FileReference Result))
 					throw new Exception("Unexpected response returned: " + ResponseObj.GetType().FullName);
@@ -868,7 +869,7 @@ namespace TAG.Networking.OpenAI
 				sb.Append(Uri.ToString());
 				sb.Append(")");
 
-				this.TransmitText(sb.ToString());
+				await this.TransmitText(sb.ToString());
 			}
 
 			try
@@ -878,7 +879,7 @@ namespace TAG.Networking.OpenAI
 					new KeyValuePair<string, string>("Authorization", "Bearer " + this.apiKey));
 
 				if (this.HasSniffers)
-					this.ReceiveText(JSON.Encode(ResponseObj, true));
+					await this.ReceiveText(JSON.Encode(ResponseObj, true));
 
 				if (!FileReference.TryParse(ResponseObj, out FileReference Ref))
 					throw new Exception("Unexpected response returned: " + ResponseObj.GetType().FullName);
@@ -909,7 +910,7 @@ namespace TAG.Networking.OpenAI
 				sb.Append(Uri.ToString());
 				sb.Append(")");
 
-				this.TransmitText(sb.ToString());
+				await this.TransmitText(sb.ToString());
 			}
 
 			try
@@ -918,7 +919,7 @@ namespace TAG.Networking.OpenAI
 					new KeyValuePair<string, string>("Authorization", "Bearer " + this.apiKey));
 
 				if (this.HasSniffers)
-					this.ReceiveText(JSON.Encode(ResponseObj, true));
+					await this.ReceiveText(JSON.Encode(ResponseObj, true));
 
 				return ResponseObj;
 			}
@@ -945,7 +946,7 @@ namespace TAG.Networking.OpenAI
 				sb.Append(Uri.ToString());
 				sb.Append(")");
 
-				this.TransmitText(sb.ToString());
+				await this.TransmitText(sb.ToString());
 			}
 
 			try
@@ -954,7 +955,7 @@ namespace TAG.Networking.OpenAI
 					new KeyValuePair<string, string>("Authorization", "Bearer " + this.apiKey));
 
 				if (this.HasSniffers)
-					this.ReceiveText(JSON.Encode(ResponseObj, true));
+					await this.ReceiveText(JSON.Encode(ResponseObj, true));
 			}
 			catch (WebException ex)
 			{

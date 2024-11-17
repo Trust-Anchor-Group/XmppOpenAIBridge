@@ -15,15 +15,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Waher.Content" Version="2.6.13" />
-    <PackageReference Include="Waher.Content.Markdown" Version="3.2.0" />
-    <PackageReference Include="Waher.Content.Markdown.Contracts" Version="3.2.3" />
-    <PackageReference Include="Waher.Content.Markdown.Latex" Version="3.1.3" />
-    <PackageReference Include="Waher.Content.Markdown.Wpf" Version="3.1.3" />
-    <PackageReference Include="Waher.Content.Markdown.Xamarin" Version="3.1.3" />
-    <PackageReference Include="Waher.Content.Markdown.Xml" Version="3.1.2" />
-    <PackageReference Include="Waher.IoTGateway" Version="2.1.0" />
-    <PackageReference Include="Waher.Runtime.Timing" Version="1.0.7" />
+    <PackageReference Include="Waher.Content" Version="2.6.14" />
+    <PackageReference Include="Waher.Content.Markdown" Version="4.0.0" />
+    <PackageReference Include="Waher.Content.Markdown.Contracts" Version="3.2.4" />
+    <PackageReference Include="Waher.Content.Markdown.Latex" Version="3.1.4" />
+    <PackageReference Include="Waher.Content.Markdown.Wpf" Version="3.1.4" />
+    <PackageReference Include="Waher.Content.Markdown.Xamarin" Version="3.1.4" />
+    <PackageReference Include="Waher.Content.Markdown.Xml" Version="3.1.4" />
+    <PackageReference Include="Waher.IoTGateway" Version="3.0.0" />
+    <PackageReference Include="Waher.Runtime.Timing" Version="2.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -32,7 +32,7 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="&quot;C:\My Projects\IoTGateway\Utilities\Waher.Utility.Install\bin\$(ConfigurationName)\net6.0\win-x86\Waher.Utility.Install.exe&quot; -m &quot;C:\My Projects\XmppOpenAIBridge\TAG.Content.Markdown.OpenAI\bin\$(ConfigurationName)\netstandard2.0\TAG.Content.Markdown.OpenAI.manifest&quot; -s &quot;C:\My Projects\IoTGateway\Waher.IoTGateway.Console\bin\$(ConfigurationName)\net6.0\Waher.IoTGateway.Console.dll&quot; -d &quot;C:\ProgramData\IoT Gateway Dev&quot;&#xD;&#xA;" />
+    <Exec Command="&quot;C:\My Projects\IoTGateway\Utilities\Waher.Utility.Install\bin\$(ConfigurationName)\net8.0\win-x86\Waher.Utility.Install.exe&quot; -m &quot;C:\My Projects\XmppOpenAIBridge\TAG.Content.Markdown.OpenAI\bin\$(ConfigurationName)\netstandard2.0\TAG.Content.Markdown.OpenAI.manifest&quot; -s &quot;C:\My Projects\IoTGateway\Waher.IoTGateway.Console\bin\$(ConfigurationName)\net8.0\Waher.IoTGateway.Console.dll&quot; -d &quot;C:\ProgramData\IoT Gateway Dev&quot;&#xD;&#xA;" />
   </Target>
 
 </Project>

@@ -10,6 +10,7 @@ using Waher.Content.Markdown;
 using Waher.Content.Xml;
 using Waher.IoTGateway;
 using Waher.Networking.XMPP;
+using Waher.Networking.XMPP.Events;
 using Waher.Persistence;
 using Waher.Runtime.Cache;
 using Waher.Runtime.Counters;
@@ -141,7 +142,7 @@ namespace TAG.Things.OpenAI
 									string Markdown = string.IsNullOrEmpty(e2.Total) ? "⧖" : e2.Total;
 									Xml.Append(await Gateway.GetMultiFormatChatMessageXml(Markdown, true, true));
 
-									XmppClient.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, MessageId,
+									await XmppClient.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, MessageId,
 										e.From, Xml.ToString(), string.Empty, string.Empty, string.Empty, string.Empty,
 										string.Empty, null, null);
 								}
@@ -176,7 +177,7 @@ namespace TAG.Things.OpenAI
 								string Markdown = string.IsNullOrEmpty(e2.Total) ? "⧖" : e2.Total;
 								Xml.Append(await Gateway.GetMultiFormatChatMessageXml(Markdown, true, true));
 
-								XmppClient.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, MessageId,
+								await XmppClient.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, MessageId,
 									e.From, Xml.ToString(), string.Empty, string.Empty, string.Empty, string.Empty,
 									string.Empty, null, null);
 							}
@@ -197,7 +198,7 @@ namespace TAG.Things.OpenAI
 						Xml.Append("<active xmlns='http://jabber.org/protocol/chatstates'/>");
 						Xml.Append(await Gateway.GetMultiFormatChatMessageXml(Response2.Content, true, true));
 
-						XmppClient.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, MessageId,
+						await XmppClient.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, MessageId,
 							e.From, Xml.ToString(), string.Empty, string.Empty, string.Empty, string.Empty,
 							string.Empty, null, null);
 
@@ -255,7 +256,7 @@ namespace TAG.Things.OpenAI
 								Xml.Clear();
 								Xml.Append(await Gateway.GetMultiFormatChatMessageXml(Response2.Content, true, true));
 
-								XmppClient.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, string.Empty,
+								await XmppClient.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, string.Empty,
 									e.From, Xml.ToString(), string.Empty, string.Empty, string.Empty, string.Empty,
 									string.Empty, null, null);
 							}
@@ -264,7 +265,7 @@ namespace TAG.Things.OpenAI
 				}
 				catch (Exception ex)
 				{
-					XmppClient.SendChatMessage(e.From, ex.Message);
+					await XmppClient.SendChatMessage(e.From, ex.Message);
 				}
 			});
 
@@ -343,7 +344,7 @@ namespace TAG.Things.OpenAI
 			Xml.Append(XML.Encode(Url));
 			Xml.Append("</url></x>");
 
-			Client.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, string.Empty,
+			await Client.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, string.Empty,
 				From, Xml.ToString(), string.Empty, string.Empty, string.Empty, string.Empty,
 				string.Empty, null, null);
 
@@ -404,7 +405,7 @@ namespace TAG.Things.OpenAI
 			Xml.Append(XML.Encode(Url));
 			Xml.Append("</url></x>");
 
-			Client.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, string.Empty,
+			await Client.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, string.Empty,
 				From, Xml.ToString(), string.Empty, string.Empty, string.Empty, string.Empty,
 				string.Empty, null, null);
 
@@ -448,7 +449,7 @@ namespace TAG.Things.OpenAI
 			Xml.Append(XML.Encode(Url));
 			Xml.Append("</url></x>");
 
-			Client.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, string.Empty,
+			await Client.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, string.Empty,
 				From, Xml.ToString(), string.Empty, string.Empty, string.Empty, string.Empty,
 				string.Empty, null, null);
 
@@ -477,7 +478,7 @@ namespace TAG.Things.OpenAI
 			Xml.Append(XML.Encode(Url));
 			Xml.Append("</url></x>");
 
-			Client.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, string.Empty,
+			await Client.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, string.Empty,
 				From, Xml.ToString(), string.Empty, string.Empty, string.Empty, string.Empty,
 				string.Empty, null, null);
 
@@ -513,7 +514,7 @@ namespace TAG.Things.OpenAI
 			Xml.Append(XML.Encode(Url));
 			Xml.Append("</url></x>");
 
-			Client.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, string.Empty,
+			await Client.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, string.Empty,
 				From, Xml.ToString(), string.Empty, string.Empty, string.Empty, string.Empty,
 				string.Empty, null, null);
 

@@ -10,6 +10,7 @@ using Waher.Content.Markdown;
 using Waher.Content.Xml;
 using Waher.IoTGateway;
 using Waher.Networking.XMPP;
+using Waher.Networking.XMPP.Events;
 using Waher.Runtime.Counters;
 using Waher.Runtime.Language;
 using Waher.Runtime.Temporary;
@@ -112,7 +113,7 @@ namespace TAG.Things.OpenAI
 						return;
 
 					string MessageId = Guid.NewGuid().ToString();
-					XmppClient.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, MessageId, e.From,
+					await XmppClient.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, MessageId, e.From,
 						string.Empty, "⧖", string.Empty, string.Empty, string.Empty, string.Empty, null, null);
 
 					StringBuilder Xml = new StringBuilder();
@@ -210,13 +211,13 @@ namespace TAG.Things.OpenAI
 						ResponseText = ImageUrl;
 					}
 
-					XmppClient.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, e.From, Xml.ToString(),
+					await XmppClient.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, e.From, Xml.ToString(),
 						ResponseText, string.Empty, string.Empty, string.Empty, string.Empty, null, null);
 				}
 			}
 			catch (Exception ex)
 			{
-				XmppClient.SendChatMessage(e.From, ex.Message);
+				await XmppClient.SendChatMessage(e.From, ex.Message);
 			}
 		}
 
