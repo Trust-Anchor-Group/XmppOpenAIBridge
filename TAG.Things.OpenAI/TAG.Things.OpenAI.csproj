@@ -25,7 +25,7 @@
     <PackageReference Include="Waher.Runtime.Cache" Version="2.0.0" />
     <PackageReference Include="Waher.Runtime.Counters" Version="2.0.0" />
     <PackageReference Include="Waher.Runtime.Language" Version="1.2.0" />
-    <PackageReference Include="Waher.Things" Version="3.0.0" />
+    <PackageReference Include="Waher.Things" Version="3.0.1" />
     <PackageReference Include="Waher.Things.Metering" Version="2.0.0" />
     <PackageReference Include="Waher.Things.Xmpp" Version="2.0.0" />
   </ItemGroup>
