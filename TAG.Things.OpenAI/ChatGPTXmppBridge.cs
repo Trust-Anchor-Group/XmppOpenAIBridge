@@ -8,6 +8,7 @@ using TAG.Networking.OpenAI.Messages;
 using Waher.Content;
 using Waher.Content.Markdown;
 using Waher.Content.Xml;
+using Waher.Events;
 using Waher.IoTGateway;
 using Waher.Networking.XMPP;
 using Waher.Networking.XMPP.Events;
@@ -551,7 +552,7 @@ namespace TAG.Things.OpenAI
 		/// <param name="State">State object to pass on to callback method.</param>
 		/// <returns>Response from OpenAI. Can be null, if text send is empty, or does not include text.</returns>
 		public Task<Message> ChatQueryWithHistory(string From, string Text, Function[] Functions, bool ClearSession,
-			StreamEventHandler IntermediateResponseCallback, object State)
+			EventHandlerAsync<StreamEventArgs> IntermediateResponseCallback, object State)
 		{
 			return this.ChatQueryWithHistory(From, Text, this.Instructions, Functions, ClearSession,
 				IntermediateResponseCallback, State);
@@ -569,7 +570,7 @@ namespace TAG.Things.OpenAI
 		/// <param name="State">State object to pass on to callback method.</param>
 		/// <returns>Response from OpenAI. Can be null, if text send is empty, or does not include text.</returns>
 		public async Task<Message> ChatQueryWithHistory(string From, string Text, string Instructions, Function[] Functions,
-			bool ClearSession, StreamEventHandler IntermediateResponseCallback, object State)
+			bool ClearSession, EventHandlerAsync<StreamEventArgs> IntermediateResponseCallback, object State)
 		{
 			await RuntimeCounters.IncrementCounter(this.NodeId + ".Rx", Text.Length);
 			await RuntimeCounters.IncrementCounter(this.NodeId + "." + From.ToLower() + ".Rx", Text.Length);

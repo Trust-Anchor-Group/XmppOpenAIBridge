@@ -139,7 +139,7 @@ namespace TAG.Networking.OpenAI
 		/// <exception cref="Exception">If unable to communicate with API, 
 		/// if exceeding limits, or if something unexpected happened.</exception>
 		public Task<Message> ChatGPT(string User, IEnumerable<Message> Messages,
-			StreamEventHandler StreamCallback, object State)
+			EventHandlerAsync<StreamEventArgs> StreamCallback, object State)
 		{
 			return this.ChatGPT(User, Messages, null, StreamCallback, State);
 		}
@@ -173,7 +173,8 @@ namespace TAG.Networking.OpenAI
 		/// <exception cref="Exception">If unable to communicate with API, 
 		/// if exceeding limits, or if something unexpected happened.</exception>
 		public async Task<Message> ChatGPT(string User, IEnumerable<Message> Messages,
-			IEnumerable<Function> Functions, StreamEventHandler StreamCallback, object State)
+			IEnumerable<Function> Functions, EventHandlerAsync<StreamEventArgs> StreamCallback, 
+			object State)
 		{
 			List<Dictionary<string, object>> Messages2 = new List<Dictionary<string, object>>();
 
@@ -369,7 +370,7 @@ namespace TAG.Networking.OpenAI
 								{
 									StreamEventArgs e = new StreamEventArgs(Result.Content, Diff, Finished, State);
 
-									await StreamCallback(this, e);
+									await StreamCallback.Raise(this, e);
 								}
 								catch (Exception ex)
 								{
@@ -389,7 +390,7 @@ namespace TAG.Networking.OpenAI
 									{
 										StreamEventArgs e = new StreamEventArgs(Result.Content, string.Empty, Finished, State);
 
-										await StreamCallback(this, e);
+										await StreamCallback.Raise(this, e);
 									}
 									catch (Exception ex)
 									{
@@ -406,7 +407,7 @@ namespace TAG.Networking.OpenAI
 							try
 							{
 								StreamEventArgs e = new StreamEventArgs(Result.Content, string.Empty, true, State);
-								await StreamCallback(this, e);
+								await StreamCallback.Raise(this, e);
 							}
 							catch (Exception ex)
 							{

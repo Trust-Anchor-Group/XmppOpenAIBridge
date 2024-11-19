@@ -1,15 +1,7 @@
 ﻿using System;
-using System.Threading.Tasks;
 
 namespace TAG.Networking.OpenAI
 {
-	/// <summary>
-	/// Delegate for stream event handlers.
-	/// </summary>
-	/// <param name="Sender">Sender of event.</param>
-	/// <param name="e">Event arguments.</param>
-	public delegate Task StreamEventHandler(object Sender, StreamEventArgs e);
-
 	/// <summary>
 	/// Event arguments for stream callback events.
 	/// </summary>
