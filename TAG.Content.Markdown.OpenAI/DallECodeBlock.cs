@@ -1,6 +1,5 @@
 ﻿using SkiaSharp;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,6 +17,7 @@ using Waher.Content.Markdown.Wpf;
 using Waher.Content.Markdown.Xamarin;
 using Waher.Content.Xml;
 using Waher.Runtime.Inventory;
+using Waher.Runtime.IO;
 using Waher.Runtime.Temporary;
 using Waher.Script;
 using Waher.Script.Graphs;
@@ -62,8 +62,8 @@ namespace TAG.Content.Markdown.OpenAI
 			int i = Language.IndexOf(':');
 			if (i > 0)
 			{
-				Title = Language.Substring(i + 1).TrimStart();
-				Language = Language.Substring(0, i).TrimEnd();
+				Title = Language[(i + 1)..].TrimStart();
+				Language = Language[..i].TrimEnd();
 			}
 			else
 				Title = string.Empty;
@@ -72,8 +72,8 @@ namespace TAG.Content.Markdown.OpenAI
 			if (i < 0)
 				return false;
 
-			NodeId = Language.Substring(i + 1).TrimStart();
-			Language = Language.Substring(0, i).TrimEnd().ToLower();
+			NodeId = Language[(i + 1)..].TrimStart();
+			Language = Language[..i].TrimEnd().ToLower();
 
 			switch (Language)
 			{
@@ -133,7 +133,7 @@ namespace TAG.Content.Markdown.OpenAI
 			string Title;
 			int i = Language.IndexOf(':');
 			if (i > 0)
-				Title = Language.Substring(i + 1).Trim();
+				Title = Language[(i + 1)..].Trim();
 			else
 				Title = null;
 
@@ -162,7 +162,7 @@ namespace TAG.Content.Markdown.OpenAI
 
 		private void GenerateHTML(StringBuilder Output, GraphInfo Info)
 		{
-			string FileName = Info.FileName.Substring(OpenAIModule.OpenAIContentFolder.Length).Replace(Path.DirectorySeparatorChar, '/');
+			string FileName = Info.FileName[OpenAIModule.OpenAIContentFolder.Length..].Replace(Path.DirectorySeparatorChar, '/');
 			if (!FileName.StartsWith("/"))
 				FileName = "/" + FileName;
 
@@ -233,18 +233,18 @@ namespace TAG.Content.Markdown.OpenAI
 			try
 			{
 				Uri ImageUri = await DalleBridge.GetImageUri(Description, Result.ImageSize);
-				KeyValuePair<string, TemporaryStream> P = await InternetContent.GetTempStreamAsync(ImageUri);
+				ContentStreamResponse Content = await InternetContent.GetTempStreamAsync(ImageUri);
+				if (Content.HasError)
+					return null;
 
-				using (TemporaryStream f = P.Value)
-				{
-					int c = (int)Math.Min(int.MaxValue, f.Length);
-					byte[] Bin = new byte[c];
+				using TemporaryStream f = Content.Encoded;
+				int c = (int)Math.Min(int.MaxValue, f.Length);
+				byte[] Bin = new byte[c];
 
-					f.Position = 0;
-					await f.ReadAsync(Bin, 0, c);
+				f.Position = 0;
+				await f.ReadAsync(Bin, 0, c);
 
-					await Resources.WriteAllBytesAsync(Result.FileName, Bin);
-				}
+				await Files.WriteAllBytesAsync(Result.FileName, Bin);
 			}
 			catch (Exception)
 			{
@@ -394,12 +394,11 @@ namespace TAG.Content.Markdown.OpenAI
 			if (Info?.FileName is null)
 				return null;
 
-			byte[] Data = await Resources.ReadAllBytesAsync(Info.FileName);
+			byte[] Data = await Files.ReadAllBytesAsync(Info.FileName);
 
-			using (SKBitmap Bitmap = SKBitmap.Decode(Data))
-			{
-				return new PixelInformationPng(Data, Bitmap.Width, Bitmap.Height);
-			}
+			using SKBitmap Bitmap = SKBitmap.Decode(Data);
+			
+			return new PixelInformationPng(Data, Bitmap.Width, Bitmap.Height);
 		}
 
 		/// <summary>

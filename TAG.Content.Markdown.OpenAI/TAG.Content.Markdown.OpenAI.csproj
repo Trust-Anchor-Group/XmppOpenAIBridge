@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,14 +15,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Waher.Content" Version="2.6.14" />
-    <PackageReference Include="Waher.Content.Markdown" Version="4.0.0" />
-    <PackageReference Include="Waher.Content.Markdown.Contracts" Version="3.2.4" />
-    <PackageReference Include="Waher.Content.Markdown.Latex" Version="3.1.4" />
-    <PackageReference Include="Waher.Content.Markdown.Wpf" Version="3.1.4" />
-    <PackageReference Include="Waher.Content.Markdown.Xamarin" Version="3.1.4" />
-    <PackageReference Include="Waher.Content.Markdown.Xml" Version="3.1.4" />
-    <PackageReference Include="Waher.IoTGateway" Version="3.0.0" />
+    <PackageReference Include="Waher.Content" Version="3.0.0" />
+    <PackageReference Include="Waher.Content.Markdown" Version="5.0.0" />
+    <PackageReference Include="Waher.Content.Markdown.Contracts" Version="4.0.0" />
+    <PackageReference Include="Waher.Content.Markdown.Latex" Version="4.0.0" />
+    <PackageReference Include="Waher.Content.Markdown.Wpf" Version="4.0.0" />
+    <PackageReference Include="Waher.Content.Markdown.Xamarin" Version="4.0.0" />
+    <PackageReference Include="Waher.Content.Markdown.Xml" Version="4.0.0" />
+    <PackageReference Include="Waher.IoTGateway" Version="3.1.0" />
+    <PackageReference Include="Waher.Runtime.IO" Version="1.0.0" />
     <PackageReference Include="Waher.Runtime.Timing" Version="2.0.0" />
   </ItemGroup>
 

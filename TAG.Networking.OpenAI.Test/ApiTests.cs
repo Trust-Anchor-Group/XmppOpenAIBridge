@@ -46,7 +46,7 @@ namespace TAG.Networking.OpenAI.Test
 		[AssemblyCleanup]
 		public static async Task AssemblyCleanup()
 		{
-			Log.Terminate();
+			await Log.TerminateAsync();
 			await Types.StopAllModules();
 		}
 
@@ -68,7 +68,7 @@ namespace TAG.Networking.OpenAI.Test
 				new ConsoleOutSniffer(BinaryPresentationMethod.Base64, LineEnding.NewLine));
 		}
 
-		[ClassCleanup]
+		[ClassCleanup(ClassCleanupBehavior.EndOfClass)]
 		public static void ClassCleanup()
 		{
 			client?.Dispose();
@@ -120,9 +120,10 @@ namespace TAG.Networking.OpenAI.Test
 			Uri ImageUri = await client.CreateImage("en grön fågel med en krona på huvudet som spelar piano med sina fötter", "UnitTest");
 			Console.Out.WriteLine(ImageUri);
 
-			KeyValuePair<string, TemporaryStream> P = await InternetContent.GetTempStreamAsync(ImageUri);
+			ContentStreamResponse Content = await InternetContent.GetTempStreamAsync(ImageUri);
+			Content.AssertOk();
 
-			await CopyAndDisposeFile(P.Value, P.Key, "Test_04");
+			await CopyAndDisposeFile(Content.Encoded, Content.ContentType, "Test_04");
 		}
 
 		[TestMethod]
@@ -137,9 +138,10 @@ namespace TAG.Networking.OpenAI.Test
 			{
 				Console.Out.WriteLine(Uri);
 
-				KeyValuePair<string, TemporaryStream> P = await InternetContent.GetTempStreamAsync(Uri);
+				ContentStreamResponse Content = await InternetContent.GetTempStreamAsync(Uri);
+				Content.AssertOk();
 
-				await CopyAndDisposeFile(P.Value, P.Key, "Test_05_" + i.ToString());
+				await CopyAndDisposeFile(Content.Encoded, Content.ContentType, "Test_05_" + i.ToString());
 
 				i++;
 			}
@@ -246,10 +248,9 @@ namespace TAG.Networking.OpenAI.Test
 			bool Finished = false;
 
 			Message Response = await client.ChatGPT("UnitTest",
-				new Message[]
-				{
+				[
 					new UserMessage("Can you write a 1000-character poem? If you cannot create a poem, create any text of 1000 characters. It must have at least three paragraphs, with empty rows between paragraphs. Please use Markdown to format the poem so it looks nice. Include a header, some text that is bold, some that is italic and some that is underlined.")
-				},
+				],
 				(sender, e) =>
 				{
 					Console.Error.Write(e.Diff);
@@ -274,12 +275,10 @@ namespace TAG.Networking.OpenAI.Test
 			Assert.IsNotNull(client);
 
 			Message Response = await client.ChatGPT("UnitTest",
-				new Message[]
-				{
+				[
 					new UserMessage("I'm looking for images of Kermit. Can you suggest a representative image?")
-				},
-				new Function[]
-				{
+				],
+				[
 					new("ShowImage", "Displays an image to the user.",
 						new StringParameter("Url", "URL to the image to show.", true),
 						new IntegerParameter("Width","Width of image, in pixels.", false, 0, false, null, false),
@@ -292,7 +291,7 @@ namespace TAG.Networking.OpenAI.Test
 						new IntegerParameter("Width","Width of image, in pixels.", false, 0, false, null, false),
 						new IntegerParameter("Height","Height of image, in pixels.", false, 0, false, null, false),
 						new StringParameter("Alt", "Alternative textual description of image, in cases the image cannot be shown.", false))))
-				});
+				]);
 
 			Console.Out.WriteLine(Response.Content);
 
@@ -308,12 +307,10 @@ namespace TAG.Networking.OpenAI.Test
 			bool Finished = false;
 
 			Message Response = await client.ChatGPT("UnitTest",
-				new Message[]
-				{
+				[
 					new UserMessage("I'm looking for images of Kermit. Can you suggest four or five representative images? Please only call provided functions, and do not return any text content.")
-				},
-				new Function[]
-				{
+				],
+				[
 					new("ShowImage", "Displays an image to the user.",
 						new StringParameter("Url", "URL to the image to show.", true),
 						new IntegerParameter("Width","Width of image, in pixels.", false, 0, false, null, false),
@@ -326,7 +323,7 @@ namespace TAG.Networking.OpenAI.Test
 						new IntegerParameter("Width","Width of image, in pixels.", false, 0, false, null, false),
 						new IntegerParameter("Height","Height of image, in pixels.", false, 0, false, null, false),
 						new StringParameter("Alt", "Alternative textual description of image, in cases the image cannot be shown.", false))))
-				},
+				],
 				(sender, e) =>
 				{
 					Console.Error.Write(e.Diff);
@@ -356,12 +353,10 @@ namespace TAG.Networking.OpenAI.Test
 			Assert.IsNotNull(client);
 
 			Message Response = await client.ChatGPT("UnitTest",
-				new Message[]
-				{
+				[
 					new UserMessage("Can you draw a graph of the derivative of the function f(x)=x^3+x^2?")
-				},
-				new Function[]
-				{
+				],
+				[
 					new("DrawCurve2D", "Draws a graph of a 2D curve.",
 						new ArrayParameter("XAxis", "Array of X-coordinate values.", true,
 						new NumberParameter("X", "An X-coordinate value.", true)),
@@ -369,7 +364,7 @@ namespace TAG.Networking.OpenAI.Test
 						new NumberParameter("Y", "An Y-coordinate value.", true)),
 						new EnumerationParameter("Color", "Color of graph.",false,
 							"Red", "Green", "Blue", "Orange", "Cyan"))
-				});
+				]);
 
 			Console.Error.WriteLine();
 			Console.Error.WriteLine();

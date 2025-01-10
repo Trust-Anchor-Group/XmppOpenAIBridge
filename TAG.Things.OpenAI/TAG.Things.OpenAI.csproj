@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,15 +19,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Waher.Content.Markdown" Version="4.0.0" />
-    <PackageReference Include="Waher.Content.Xml" Version="2.3.3" />
-    <PackageReference Include="Waher.IoTGateway" Version="3.0.0" />
+    <PackageReference Include="Waher.Content.Markdown" Version="5.0.0" />
+    <PackageReference Include="Waher.Content.Xml" Version="3.0.0" />
+    <PackageReference Include="Waher.IoTGateway" Version="3.1.0" />
     <PackageReference Include="Waher.Runtime.Cache" Version="2.0.0" />
     <PackageReference Include="Waher.Runtime.Counters" Version="2.0.0" />
     <PackageReference Include="Waher.Runtime.Language" Version="1.2.0" />
-    <PackageReference Include="Waher.Things" Version="3.0.1" />
-    <PackageReference Include="Waher.Things.Metering" Version="2.0.0" />
-    <PackageReference Include="Waher.Things.Xmpp" Version="2.0.0" />
+    <PackageReference Include="Waher.Things" Version="3.1.0" />
+    <PackageReference Include="Waher.Things.Metering" Version="2.1.0" />
+    <PackageReference Include="Waher.Things.Xmpp" Version="2.1.0" />
   </ItemGroup>
 
   <ItemGroup>

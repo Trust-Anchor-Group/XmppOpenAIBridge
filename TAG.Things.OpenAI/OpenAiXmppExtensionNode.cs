@@ -51,24 +51,28 @@ namespace TAG.Things.OpenAI
 
 		public bool DecoupledEvents => this.communicationLayer.DecoupledEvents;
 
-		public Task ReceiveBinary(byte[] Data) => this.communicationLayer.ReceiveBinary(Data) ?? Task.CompletedTask;
-		public Task TransmitBinary(byte[] Data) => this.communicationLayer.TransmitBinary(Data) ?? Task.CompletedTask;
-		public Task ReceiveText(string Text) => this.communicationLayer.ReceiveText(Text) ?? Task.CompletedTask;
-		public Task TransmitText(string Text) => this.communicationLayer.TransmitText(Text) ?? Task.CompletedTask;
-		public Task Information(string Comment) => this.communicationLayer.Information(Comment) ?? Task.CompletedTask;
-		public Task Warning(string Warning) => this.communicationLayer.Warning(Warning) ?? Task.CompletedTask;
-		public Task Error(string Error) => this.communicationLayer.Error(Error) ?? Task.CompletedTask;
-		public Task Exception(Exception Exception) => this.communicationLayer.Exception(Exception) ?? Task.CompletedTask;
-		public Task Exception(string Exception) => this.communicationLayer.Exception(Exception) ?? Task.CompletedTask;
-		public Task ReceiveBinary(DateTime Timestamp, byte[] Data) => this.communicationLayer.ReceiveBinary(Timestamp, Data) ?? Task.CompletedTask;
-		public Task TransmitBinary(DateTime Timestamp, byte[] Data) => this.communicationLayer.TransmitBinary(Timestamp, Data) ?? Task.CompletedTask;
-		public Task ReceiveText(DateTime Timestamp, string Text) => this.communicationLayer.ReceiveText(Timestamp, Text) ?? Task.CompletedTask;
-		public Task TransmitText(DateTime Timestamp, string Text) => this.communicationLayer.TransmitText(Timestamp, Text) ?? Task.CompletedTask;
-		public Task Information(DateTime Timestamp, string Comment) => this.communicationLayer.Information(Timestamp, Comment) ?? Task.CompletedTask;
-		public Task Warning(DateTime Timestamp, string Warning) => this.communicationLayer.Warning(Timestamp, Warning) ?? Task.CompletedTask;
-		public Task Error(DateTime Timestamp, string Error) => this.communicationLayer.Error(Timestamp, Error) ?? Task.CompletedTask;
-		public Task Exception(DateTime Timestamp, string Exception) => this.communicationLayer.Exception(Timestamp, Exception) ?? Task.CompletedTask;
-		public Task Exception(DateTime Timestamp, Exception Exception) => this.communicationLayer.Exception(Timestamp, Exception) ?? Task.CompletedTask;
+		public void ReceiveBinary(bool ConstantBuffer, byte[] Data) => this.communicationLayer.ReceiveBinary(ConstantBuffer, Data);
+		public void TransmitBinary(bool ConstantBuffer, byte[] Data) => this.communicationLayer.TransmitBinary(ConstantBuffer, Data);
+		public void ReceiveBinary(bool ConstantBuffer, byte[] Data, int Offset, int Count) => this.communicationLayer.ReceiveBinary(ConstantBuffer, Data, Offset, Count);
+		public void TransmitBinary(bool ConstantBuffer, byte[] Data, int Offset, int Count) => this.communicationLayer.TransmitBinary(ConstantBuffer, Data, Offset, Count);
+		public void ReceiveText(string Text) => this.communicationLayer.ReceiveText(Text);
+		public void TransmitText(string Text) => this.communicationLayer.TransmitText(Text);
+		public void Information(string Comment) => this.communicationLayer.Information(Comment);
+		public void Warning(string Warning) => this.communicationLayer.Warning(Warning);
+		public void Error(string Error) => this.communicationLayer.Error(Error);
+		public void Exception(Exception Exception) => this.communicationLayer.Exception(Exception);
+		public void Exception(string Exception) => this.communicationLayer.Exception(Exception);
+		public void ReceiveBinary(DateTime Timestamp, bool ConstantBuffer, byte[] Data) => this.communicationLayer.ReceiveBinary(Timestamp, ConstantBuffer, Data);
+		public void TransmitBinary(DateTime Timestamp, bool ConstantBuffer, byte[] Data) => this.communicationLayer.TransmitBinary(Timestamp, ConstantBuffer, Data);
+		public void ReceiveBinary(DateTime Timestamp, bool ConstantBuffer, byte[] Data, int Offset, int Count) => this.communicationLayer.ReceiveBinary(Timestamp, ConstantBuffer, Data, Offset, Count);
+		public void TransmitBinary(DateTime Timestamp, bool ConstantBuffer, byte[] Data, int Offset, int Count) => this.communicationLayer.TransmitBinary(Timestamp, ConstantBuffer, Data, Offset, Count);
+		public void ReceiveText(DateTime Timestamp, string Text) => this.communicationLayer.ReceiveText(Timestamp, Text);
+		public void TransmitText(DateTime Timestamp, string Text) => this.communicationLayer.TransmitText(Timestamp, Text);
+		public void Information(DateTime Timestamp, string Comment) => this.communicationLayer.Information(Timestamp, Comment);
+		public void Warning(DateTime Timestamp, string Warning) => this.communicationLayer.Warning(Timestamp, Warning);
+		public void Error(DateTime Timestamp, string Error) => this.communicationLayer.Error(Timestamp, Error);
+		public void Exception(DateTime Timestamp, string Exception) => this.communicationLayer.Exception(Timestamp, Exception);
+		public void Exception(DateTime Timestamp, Exception Exception) => this.communicationLayer.Exception(Timestamp, Exception);
 
 		#endregion
 

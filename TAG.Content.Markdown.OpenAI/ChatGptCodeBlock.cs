@@ -4,7 +4,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using TAG.Things.OpenAI;
-using Waher.Content;
 using Waher.Content.Markdown;
 using Waher.Content.Markdown.Contracts;
 using Waher.Content.Markdown.Latex;
@@ -14,6 +13,7 @@ using Waher.Content.Markdown.Wpf;
 using Waher.Content.Markdown.Xamarin;
 using Waher.Content.Xml;
 using Waher.Runtime.Inventory;
+using Waher.Runtime.IO;
 using Waher.Script;
 using Waher.Security;
 using Waher.Things;
@@ -54,8 +54,8 @@ namespace TAG.Content.Markdown.OpenAI
 			int i = Language.IndexOf(':');
 			if (i > 0)
 			{
-				Title = Language.Substring(i + 1).TrimStart();
-				Language = Language.Substring(0, i).TrimEnd();
+				Title = Language[(i + 1)..].TrimStart();
+				Language = Language[..i].TrimEnd();
 			}
 			else
 				Title = string.Empty;
@@ -64,8 +64,8 @@ namespace TAG.Content.Markdown.OpenAI
 			if (i < 0)
 				return false;
 
-			NodeId = Language.Substring(i + 1).TrimStart();
-			Language = Language.Substring(0, i).TrimEnd().ToLower();
+			NodeId = Language[(i + 1)..].TrimStart();
+			Language = Language[..i].TrimEnd().ToLower();
 
 			if (Language != "chatgpt")
 				return false;
@@ -109,7 +109,7 @@ namespace TAG.Content.Markdown.OpenAI
 			string Title;
 			int i = Language.IndexOf(':');
 			if (i > 0)
-				Title = Language.Substring(i + 1).Trim();
+				Title = Language[(i + 1)..].Trim();
 			else
 				Title = null;
 
@@ -171,7 +171,7 @@ namespace TAG.Content.Markdown.OpenAI
 			string Text;
 
 			if (File.Exists(FileName))
-				return await Resources.ReadAllTextAsync(FileName);
+				return await Files.ReadAllTextAsync(FileName);
 
 			if (!GenerateIfNotExists)
 				return null;
@@ -180,7 +180,7 @@ namespace TAG.Content.Markdown.OpenAI
 			{
 				Text = await ChatGptBridge.ChatCompletionNoHistory(Description);
 
-				await Resources.WriteAllTextAsync(FileName, Text, Encoding.UTF8);
+				await Files.WriteAllTextAsync(FileName, Text, Encoding.UTF8);
 			}
 			catch (Exception)
 			{

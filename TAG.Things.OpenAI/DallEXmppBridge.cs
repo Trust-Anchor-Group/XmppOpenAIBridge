@@ -12,6 +12,7 @@ using Waher.IoTGateway;
 using Waher.Networking.XMPP;
 using Waher.Networking.XMPP.Events;
 using Waher.Runtime.Counters;
+using Waher.Runtime.IO;
 using Waher.Runtime.Language;
 using Waher.Runtime.Temporary;
 using Waher.Security;
@@ -106,114 +107,118 @@ namespace TAG.Things.OpenAI
 
 			try
 			{
-				using (OpenAIClient Client = new OpenAIClient(this.ApiKey, this.Sniffers))
+				using OpenAIClient Client = new OpenAIClient(this.ApiKey, this.Sniffers);
+
+				string Text = e.Body.Trim();
+				if (string.IsNullOrEmpty(Text))
+					return;
+
+				string MessageId = Guid.NewGuid().ToString();
+				await XmppClient.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, MessageId, e.From,
+					string.Empty, "⧖", string.Empty, string.Empty, string.Empty, string.Empty, null, null);
+
+				StringBuilder Xml = new StringBuilder();
+				string ResponseText;
+
+				Xml.Append("<replace id='");
+				Xml.Append(MessageId);
+				Xml.Append("' xmlns='urn:xmpp:message-correct:0'/>");
+				Xml.Append("<muteDiff xmlns='http://waher.se/Schema/Editing.xsd'/>");
+
+				Text = await ConvertTextIfSpeech(Client, Text);
+				if (string.IsNullOrEmpty(Text))
+					ResponseText = "?";
+				else
 				{
-					string Text = e.Body.Trim();
-					if (string.IsNullOrEmpty(Text))
-						return;
+					string Hash = Hashes.ComputeSHA256HashString(Encoding.UTF8.GetBytes(this.ApiKey + Text + this.ImageSize.ToString()));
+					string FileName = Path.Combine(Gateway.RootFolder, "OpenAI", Hash) + ".png";
 
-					string MessageId = Guid.NewGuid().ToString();
-					await XmppClient.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, MessageId, e.From,
-						string.Empty, "⧖", string.Empty, string.Empty, string.Empty, string.Empty, null, null);
-
-					StringBuilder Xml = new StringBuilder();
-					string ResponseText;
-
-					Xml.Append("<replace id='");
-					Xml.Append(MessageId);
-					Xml.Append("' xmlns='urn:xmpp:message-correct:0'/>");
-					Xml.Append("<muteDiff xmlns='http://waher.se/Schema/Editing.xsd'/>");
-
-					Text = await ConvertTextIfSpeech(Client, Text);
-					if (string.IsNullOrEmpty(Text))
-						ResponseText = "?";
-					else
+					if (!File.Exists(FileName))
 					{
-						string Hash = Hashes.ComputeSHA256HashString(Encoding.UTF8.GetBytes(this.ApiKey + Text + this.ImageSize.ToString()));
-						string FileName = Path.Combine(Gateway.RootFolder, "OpenAI", Hash) + ".png";
+						await RuntimeCounters.IncrementCounter(this.NodeId + ".Rx", Text.Length);
+						await RuntimeCounters.IncrementCounter(this.NodeId + "." + e.FromBareJID.ToLower() + ".Rx", Text.Length);
 
-						if (!File.Exists(FileName))
+						Uri ImageUri = await Client.CreateImage(Text, this.ImageSize, e.FromBareJID.ToLower());
+						ContentStreamResponse Content = await InternetContent.GetTempStreamAsync(ImageUri);
+
+						if (Content.HasError)
 						{
-							await RuntimeCounters.IncrementCounter(this.NodeId + ".Rx", Text.Length);
-							await RuntimeCounters.IncrementCounter(this.NodeId + "." + e.FromBareJID.ToLower() + ".Rx", Text.Length);
-
-							Uri ImageUri = await Client.CreateImage(Text, this.ImageSize, e.FromBareJID.ToLower());
-							KeyValuePair<string, TemporaryStream> P = await InternetContent.GetTempStreamAsync(ImageUri);
-
-							using (TemporaryStream f = P.Value)
-							{
-								int c = (int)Math.Min(int.MaxValue, f.Length);
-								byte[] Bin = new byte[c];
-
-								f.Position = 0;
-								await f.ReadAsync(Bin, 0, c);
-
-								await Resources.WriteAllBytesAsync(FileName, Bin);
-
-								await RuntimeCounters.IncrementCounter(this.NodeId + ".Tx", c);
-								await RuntimeCounters.IncrementCounter(this.NodeId + "." + e.FromBareJID.ToLower() + ".Tx", c);
-							}
+							await XmppClient.SendChatMessage(e.From, Content.Error.Message);
+							return;
 						}
 
-						string ImageUrl = Gateway.GetUrl("/OpenAI/" + Hash + ".png");
+						using TemporaryStream f = Content.Encoded;
 
-						Xml.Append("<content xmlns=\"urn:xmpp:content\" type=\"text/markdown\">");
-						Xml.Append("![");
-						Xml.Append(MarkdownDocument.Encode(Text.Replace('\r', ' ').Replace('\n', ' ')));
-						Xml.Append("](");
-						Xml.Append(ImageUrl);
+						int c = (int)Math.Min(int.MaxValue, f.Length);
+						byte[] Bin = new byte[c];
 
-						switch (this.ImageSize)
-						{
-							case ImageSize.ImageSize256x256:
-								Xml.Append(" 256 256");
-								break;
+						f.Position = 0;
+						await f.ReadAsync(Bin, 0, c);
 
-							case ImageSize.ImageSize512x512:
-								Xml.Append(" 512 512");
-								break;
+						await Files.WriteAllBytesAsync(FileName, Bin);
 
-							case ImageSize.ImageSize1024x1024:
-								Xml.Append(" 1024 1024");
-								break;
-						}
-
-						Xml.Append(")</content>");
-
-						Xml.Append("<html xmlns='http://jabber.org/protocol/xhtml-im'>");
-						Xml.Append("<body xmlns='http://www.w3.org/1999/xhtml'>");
-						Xml.Append("<img src='");
-						Xml.Append(ImageUrl);
-
-						switch (this.ImageSize)
-						{
-							case ImageSize.ImageSize256x256:
-								Xml.Append("' width='256' height='256");
-								break;
-
-							case ImageSize.ImageSize512x512:
-								Xml.Append("' width='512' height='512");
-								break;
-
-							case ImageSize.ImageSize1024x1024:
-								Xml.Append("' width='1024' height='1024");
-								break;
-						}
-
-						Xml.Append("' alt='");
-						Xml.Append(XML.HtmlAttributeEncode(Text.Replace('\r', ' ').Replace('\n', ' ')));
-						Xml.Append("'/></body></html>");
-
-						Xml.Append("<x xmlns='jabber:x:oob'><url>");
-						Xml.Append(XML.Encode(ImageUrl));
-						Xml.Append("</url></x>");
-
-						ResponseText = ImageUrl;
+						await RuntimeCounters.IncrementCounter(this.NodeId + ".Tx", c);
+						await RuntimeCounters.IncrementCounter(this.NodeId + "." + e.FromBareJID.ToLower() + ".Tx", c);
 					}
 
-					await XmppClient.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, e.From, Xml.ToString(),
-						ResponseText, string.Empty, string.Empty, string.Empty, string.Empty, null, null);
+					string ImageUrl = Gateway.GetUrl("/OpenAI/" + Hash + ".png");
+
+					Xml.Append("<content xmlns=\"urn:xmpp:content\" type=\"text/markdown\">");
+					Xml.Append("![");
+					Xml.Append(MarkdownDocument.Encode(Text.Replace('\r', ' ').Replace('\n', ' ')));
+					Xml.Append("](");
+					Xml.Append(ImageUrl);
+
+					switch (this.ImageSize)
+					{
+						case ImageSize.ImageSize256x256:
+							Xml.Append(" 256 256");
+							break;
+
+						case ImageSize.ImageSize512x512:
+							Xml.Append(" 512 512");
+							break;
+
+						case ImageSize.ImageSize1024x1024:
+							Xml.Append(" 1024 1024");
+							break;
+					}
+
+					Xml.Append(")</content>");
+
+					Xml.Append("<html xmlns='http://jabber.org/protocol/xhtml-im'>");
+					Xml.Append("<body xmlns='http://www.w3.org/1999/xhtml'>");
+					Xml.Append("<img src='");
+					Xml.Append(ImageUrl);
+
+					switch (this.ImageSize)
+					{
+						case ImageSize.ImageSize256x256:
+							Xml.Append("' width='256' height='256");
+							break;
+
+						case ImageSize.ImageSize512x512:
+							Xml.Append("' width='512' height='512");
+							break;
+
+						case ImageSize.ImageSize1024x1024:
+							Xml.Append("' width='1024' height='1024");
+							break;
+					}
+
+					Xml.Append("' alt='");
+					Xml.Append(XML.HtmlAttributeEncode(Text.Replace('\r', ' ').Replace('\n', ' ')));
+					Xml.Append("'/></body></html>");
+
+					Xml.Append("<x xmlns='jabber:x:oob'><url>");
+					Xml.Append(XML.Encode(ImageUrl));
+					Xml.Append("</url></x>");
+
+					ResponseText = ImageUrl;
 				}
+
+				await XmppClient.SendMessage(QoSLevel.Unacknowledged, MessageType.Chat, e.From, Xml.ToString(),
+					ResponseText, string.Empty, string.Empty, string.Empty, string.Empty, null, null);
 			}
 			catch (Exception ex)
 			{
@@ -239,10 +244,9 @@ namespace TAG.Things.OpenAI
 		/// <returns>Image URI</returns>
 		public async Task<Uri> GetImageUri(string Description, ImageSize Size)
 		{
-			using (OpenAIClient Client = new OpenAIClient(this.ApiKey, this.Sniffers))
-			{
-				return await Client.CreateImage(Description, Size, string.Empty);
-			}
+			using OpenAIClient Client = new OpenAIClient(this.ApiKey, this.Sniffers);
+
+			return await Client.CreateImage(Description, Size, string.Empty);
 		}
 
 	}
