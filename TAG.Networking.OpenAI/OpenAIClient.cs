@@ -570,12 +570,13 @@ namespace TAG.Networking.OpenAI
 
 				Content.AssertOk();
 
-				object ResponseObj = await InternetContent.DecodeAsync(Content.ContentType, Content.Encoded, audioTranscriptionsUri);
+				ContentResponse ResponseObj = await InternetContent.DecodeAsync(Content.ContentType, Content.Encoded, audioTranscriptionsUri);
+				ResponseObj.AssertOk();
 
 				if (this.HasSniffers)
-					this.ReceiveText(JSON.Encode(ResponseObj, true));
+					this.ReceiveText(JSON.Encode(ResponseObj.Decoded, true));
 
-				if (!(ResponseObj is Dictionary<string, object> Response))
+				if (!(ResponseObj.Decoded is Dictionary<string, object> Response))
 					throw new Exception("Unexpected response returned: " + ResponseObj.GetType().FullName);
 
 				if (!Response.TryGetValue("text", out object Obj) || !(Obj is string Text))
@@ -840,12 +841,13 @@ namespace TAG.Networking.OpenAI
 
 				Content.AssertOk();
 
-				object ResponseObj = await InternetContent.DecodeAsync(Content.ContentType, Content.Encoded, audioTranscriptionsUri);
+				ContentResponse ResponseObj = await InternetContent.DecodeAsync(Content.ContentType, Content.Encoded, audioTranscriptionsUri);
+				ResponseObj.AssertOk();
 
 				if (this.HasSniffers)
-					this.ReceiveText(JSON.Encode(ResponseObj, true));
+					this.ReceiveText(JSON.Encode(ResponseObj.Decoded, true));
 
-				if (!FileReference.TryParse(ResponseObj, out FileReference Result))
+				if (!FileReference.TryParse(ResponseObj.Decoded, out FileReference Result))
 					throw new Exception("Unexpected response returned: " + ResponseObj.GetType().FullName);
 
 				return Result;

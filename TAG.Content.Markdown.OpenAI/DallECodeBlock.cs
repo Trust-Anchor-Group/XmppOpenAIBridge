@@ -440,10 +440,13 @@ namespace TAG.Content.Markdown.OpenAI
 						break;
 
 					default:
-						object Obj = await InternetContent.DecodeAsync(ContentType, Bin, null);
-						if (!(Obj is SKImage Image))
+						ContentResponse Content = await InternetContent.DecodeAsync(ContentType, Bin, null);
+						if (Content.HasError)
+							return false;
+
+						if (!(Content.Decoded is SKImage Image))
 						{
-							if (Obj is IDisposable Disposable)
+							if (Content.Decoded is IDisposable Disposable)
 								Disposable.Dispose();
 
 							return false;
