@@ -232,14 +232,15 @@ namespace TAG.Networking.OpenAI
 
 				if (StreamCallback is null)
 				{
-					object ResponseObj = await InternetContent.PostAsync(chatCompletionsUri, Request,
+					ContentResponse ResponseObj = await InternetContent.PostAsync(chatCompletionsUri, Request,
 						new KeyValuePair<string, string>("Accept", "application/json"),
 						new KeyValuePair<string, string>("Authorization", "Bearer " + this.apiKey));
+					ResponseObj.AssertOk();
 
 					if (this.HasSniffers)
-						this.ReceiveText(JSON.Encode(ResponseObj, true));
+						this.ReceiveText(JSON.Encode(ResponseObj.Decoded, true));
 
-					if (!(ResponseObj is Dictionary<string, object> Response))
+					if (!(ResponseObj.Decoded is Dictionary<string, object> Response))
 						throw new Exception("Unexpected response returned: " + ResponseObj.GetType().FullName);
 
 					if (!Response.TryGetValue("choices", out object Obj) ||
@@ -669,14 +670,16 @@ namespace TAG.Networking.OpenAI
 
 			try
 			{
-				object ResponseObj = await InternetContent.PostAsync(imagesGenerationsUri, Request,
+				ContentResponse ResponseObj = await InternetContent.PostAsync(imagesGenerationsUri, Request,
 					new KeyValuePair<string, string>("Accept", "application/json"),
 					new KeyValuePair<string, string>("Authorization", "Bearer " + this.apiKey));
 
-				if (this.HasSniffers)
-					this.ReceiveText(JSON.Encode(ResponseObj, true));
+				ResponseObj.AssertOk();
 
-				if (!(ResponseObj is Dictionary<string, object> Response))
+				if (this.HasSniffers)
+					this.ReceiveText(JSON.Encode(ResponseObj.Decoded, true));
+
+				if (!(ResponseObj.Decoded is Dictionary<string, object> Response))
 					throw new Exception("Unexpected response returned: " + ResponseObj.GetType().FullName);
 
 				if (!Response.TryGetValue("data", out object Obj) || !(Obj is Array Data))
@@ -729,14 +732,15 @@ namespace TAG.Networking.OpenAI
 
 			try
 			{
-				object ResponseObj = await InternetContent.GetAsync(filesUri,
+				ContentResponse ResponseObj = await InternetContent.GetAsync(filesUri,
 					new KeyValuePair<string, string>("Accept", "application/json"),
 					new KeyValuePair<string, string>("Authorization", "Bearer " + this.apiKey));
+				ResponseObj.AssertOk();
 
 				if (this.HasSniffers)
-					this.ReceiveText(JSON.Encode(ResponseObj, true));
+					this.ReceiveText(JSON.Encode(ResponseObj.Decoded, true));
 
-				if (!(ResponseObj is Dictionary<string, object> Response))
+				if (!(ResponseObj.Decoded is Dictionary<string, object> Response))
 					throw new Exception("Unexpected response returned: " + ResponseObj.GetType().FullName);
 
 				if (!Response.TryGetValue("data", out object Obj) || !(Obj is Array Data))
@@ -881,14 +885,15 @@ namespace TAG.Networking.OpenAI
 
 			try
 			{
-				object ResponseObj = await InternetContent.GetAsync(Uri,
+				ContentResponse ResponseObj = await InternetContent.GetAsync(Uri,
 					new KeyValuePair<string, string>("Accept", "application/json"),
 					new KeyValuePair<string, string>("Authorization", "Bearer " + this.apiKey));
+				ResponseObj.AssertOk();
 
 				if (this.HasSniffers)
-					this.ReceiveText(JSON.Encode(ResponseObj, true));
+					this.ReceiveText(JSON.Encode(ResponseObj.Decoded, true));
 
-				if (!FileReference.TryParse(ResponseObj, out FileReference Ref))
+				if (!FileReference.TryParse(ResponseObj.Decoded, out FileReference Ref))
 					throw new Exception("Unexpected response returned: " + ResponseObj.GetType().FullName);
 
 				return Ref;
@@ -922,13 +927,14 @@ namespace TAG.Networking.OpenAI
 
 			try
 			{
-				object ResponseObj = await InternetContent.GetAsync(Uri,
+				ContentResponse ResponseObj = await InternetContent.GetAsync(Uri,
 					new KeyValuePair<string, string>("Authorization", "Bearer " + this.apiKey));
+				ResponseObj.AssertOk();
 
 				if (this.HasSniffers)
-					this.ReceiveText(JSON.Encode(ResponseObj, true));
+					this.ReceiveText(JSON.Encode(ResponseObj.Decoded, true));
 
-				return ResponseObj;
+				return ResponseObj.Decoded;
 			}
 			catch (WebException ex)
 			{
@@ -958,11 +964,12 @@ namespace TAG.Networking.OpenAI
 
 			try
 			{
-				object ResponseObj = await InternetContent.DeleteAsync(Uri,
+				ContentResponse ResponseObj = await InternetContent.DeleteAsync(Uri,
 					new KeyValuePair<string, string>("Authorization", "Bearer " + this.apiKey));
+				ResponseObj.AssertOk();
 
 				if (this.HasSniffers)
-					this.ReceiveText(JSON.Encode(ResponseObj, true));
+					this.ReceiveText(JSON.Encode(ResponseObj.Decoded, true));
 			}
 			catch (WebException ex)
 			{
