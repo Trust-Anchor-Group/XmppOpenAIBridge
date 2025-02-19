@@ -19,14 +19,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Waher.Content.Markdown" Version="5.0.0" />
+    <PackageReference Include="Waher.Content.Markdown" Version="5.2.0" />
     <PackageReference Include="Waher.Content.Xml" Version="3.0.0" />
-    <PackageReference Include="Waher.IoTGateway" Version="3.1.0" />
+    <PackageReference Include="Waher.IoTGateway" Version="3.2.0" />
     <PackageReference Include="Waher.Runtime.Cache" Version="2.0.0" />
     <PackageReference Include="Waher.Runtime.Counters" Version="2.0.0" />
     <PackageReference Include="Waher.Runtime.Language" Version="1.2.0" />
-    <PackageReference Include="Waher.Things" Version="3.1.0" />
-    <PackageReference Include="Waher.Things.Metering" Version="2.1.0" />
+    <PackageReference Include="Waher.Things" Version="3.2.0" />
+    <PackageReference Include="Waher.Things.Metering" Version="2.1.2" />
     <PackageReference Include="Waher.Things.Xmpp" Version="2.1.0" />
   </ItemGroup>
 

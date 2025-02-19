@@ -15,15 +15,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Waher.Content" Version="3.0.0" />
-    <PackageReference Include="Waher.Content.Markdown" Version="5.0.0" />
+    <PackageReference Include="Waher.Content" Version="3.1.0" />
+    <PackageReference Include="Waher.Content.Markdown" Version="5.2.0" />
     <PackageReference Include="Waher.Content.Markdown.Contracts" Version="4.0.0" />
     <PackageReference Include="Waher.Content.Markdown.Latex" Version="4.0.0" />
     <PackageReference Include="Waher.Content.Markdown.Wpf" Version="4.0.0" />
     <PackageReference Include="Waher.Content.Markdown.Xamarin" Version="4.0.0" />
     <PackageReference Include="Waher.Content.Markdown.Xml" Version="4.0.0" />
-    <PackageReference Include="Waher.IoTGateway" Version="3.1.0" />
-    <PackageReference Include="Waher.Runtime.IO" Version="1.0.0" />
+    <PackageReference Include="Waher.IoTGateway" Version="3.2.0" />
+    <PackageReference Include="Waher.Runtime.IO" Version="1.0.1" />
     <PackageReference Include="Waher.Runtime.Timing" Version="2.0.0" />
   </ItemGroup>
 

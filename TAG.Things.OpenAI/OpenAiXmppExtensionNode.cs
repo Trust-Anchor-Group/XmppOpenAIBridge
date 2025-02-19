@@ -51,6 +51,8 @@ namespace TAG.Things.OpenAI
 
 		public bool DecoupledEvents => this.communicationLayer.DecoupledEvents;
 
+		public void ReceiveBinary(int Count) => this.communicationLayer.ReceiveBinary(Count);
+		public void TransmitBinary(int Count) => this.communicationLayer.TransmitBinary(Count);
 		public void ReceiveBinary(bool ConstantBuffer, byte[] Data) => this.communicationLayer.ReceiveBinary(ConstantBuffer, Data);
 		public void TransmitBinary(bool ConstantBuffer, byte[] Data) => this.communicationLayer.TransmitBinary(ConstantBuffer, Data);
 		public void ReceiveBinary(bool ConstantBuffer, byte[] Data, int Offset, int Count) => this.communicationLayer.ReceiveBinary(ConstantBuffer, Data, Offset, Count);
@@ -62,6 +64,8 @@ namespace TAG.Things.OpenAI
 		public void Error(string Error) => this.communicationLayer.Error(Error);
 		public void Exception(Exception Exception) => this.communicationLayer.Exception(Exception);
 		public void Exception(string Exception) => this.communicationLayer.Exception(Exception);
+		public void ReceiveBinary(DateTime Timestamp, int Count) => this.communicationLayer.ReceiveBinary(Timestamp, Count);
+		public void TransmitBinary(DateTime Timestamp, int Count) => this.communicationLayer.TransmitBinary(Timestamp, Count);
 		public void ReceiveBinary(DateTime Timestamp, bool ConstantBuffer, byte[] Data) => this.communicationLayer.ReceiveBinary(Timestamp, ConstantBuffer, Data);
 		public void TransmitBinary(DateTime Timestamp, bool ConstantBuffer, byte[] Data) => this.communicationLayer.TransmitBinary(Timestamp, ConstantBuffer, Data);
 		public void ReceiveBinary(DateTime Timestamp, bool ConstantBuffer, byte[] Data, int Offset, int Count) => this.communicationLayer.ReceiveBinary(Timestamp, ConstantBuffer, Data, Offset, Count);
