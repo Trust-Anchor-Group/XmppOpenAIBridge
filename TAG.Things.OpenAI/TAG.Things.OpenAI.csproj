@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Remove="C:\Users\peter\.nuget\packages\waher.things.xmpp\1.0.1\contentFiles\any\netstandard2.0\Language\Waher.Things.Xmpp.en.lng" />
+    <Content Remove="C:\Users\peter\.nuget\packages\waher.things.xmpp\1.0.1\contentFiles\any\netstandard2.1\Language\Waher.Things.Xmpp.en.lng" />
   </ItemGroup>
 
   <ItemGroup>
