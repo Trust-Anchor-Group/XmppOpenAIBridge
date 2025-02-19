@@ -22,6 +22,7 @@
     <PackageReference Include="Waher.Content.Markdown.Wpf" Version="4.0.0" />
     <PackageReference Include="Waher.Content.Markdown.Xamarin" Version="4.0.0" />
     <PackageReference Include="Waher.Content.Markdown.Xml" Version="4.0.0" />
+    <PackageReference Include="Waher.Events" Version="1.4.1" />
     <PackageReference Include="Waher.IoTGateway" Version="3.2.0" />
     <PackageReference Include="Waher.Runtime.IO" Version="1.0.1" />
     <PackageReference Include="Waher.Runtime.Timing" Version="2.0.0" />
