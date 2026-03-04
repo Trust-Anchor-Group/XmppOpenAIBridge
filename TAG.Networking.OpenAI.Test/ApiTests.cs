@@ -68,7 +68,7 @@ namespace TAG.Networking.OpenAI.Test
 				new ConsoleOutSniffer(BinaryPresentationMethod.Base64, LineEnding.NewLine));
 		}
 
-		[ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+		[ClassCleanup]
 		public static void ClassCleanup()
 		{
 			client?.Dispose();
