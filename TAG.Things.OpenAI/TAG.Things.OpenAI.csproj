@@ -20,9 +20,9 @@
 
   <ItemGroup>
     <PackageReference Include="Waher.Content.Markdown" Version="6.4.0" />
-    <PackageReference Include="Waher.Content.Xml" Version="3.1.7" />
-    <PackageReference Include="Waher.IoTGateway" Version="3.10.2" />
-    <PackageReference Include="Waher.Mcp.Xmpp" Version="1.0.1" />
+    <PackageReference Include="Waher.Content.Xml" Version="3.2.0" />
+    <PackageReference Include="Waher.IoTGateway" Version="3.11.0" />
+    <PackageReference Include="Waher.Mcp.Xmpp" Version="1.0.2" />
     <PackageReference Include="Waher.Runtime.Cache" Version="2.2.1" />
     <PackageReference Include="Waher.Runtime.Counters" Version="2.1.0" />
     <PackageReference Include="Waher.Runtime.Language" Version="1.2.0" />
